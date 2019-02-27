@@ -7,7 +7,9 @@ where
 
 import qualified Data.Aeson as Aeson
 import qualified Data.ByteArray as Memory
+import qualified Data.ByteString as ByteString
 import qualified Data.ByteString.Lazy as LazyByteString
+import qualified Data.CaseInsensitive as CaseInsensitive
 import qualified Data.Either as Either
 import qualified Data.List as List
 import qualified Data.String as String
@@ -16,11 +18,35 @@ import qualified Data.Text.Encoding as Encoding
 import qualified Data.Version as Version
 import qualified Network.HTTP.Types as Http
 import qualified Network.HTTP.Types.QueryLike as Http
+import qualified Network.Wai as Wai
 import qualified Revolio
 import qualified Test.Hspec as Hspec
 
 main :: IO ()
 main = Hspec.hspec . Hspec.describe "Revolio" $ do
+
+  Hspec.describe "Server" $ do
+
+    Hspec.describe "authorizeRequest" $ do
+
+      Hspec.it "authorizes a valid request" $ do
+        -- https://api.slack.com/docs/verifying-requests-from-slack#step-by-step_walk-through_for_validating_a_request
+        let
+          secret = Revolio.textToSlackSigningSecret
+            $ text "8f742231b10e8888abcd99yyyzzz85a5"
+          header k v = (CaseInsensitive.mk $ utf8 k, utf8 v)
+          request = Wai.defaultRequest
+            { Wai.requestHeaders =
+              [ header "X-Slack-Request-Timestamp" "1531420618"
+              , header
+                "X-Slack-Signature"
+                "v0=a2114d57b48eac39b9ad189dd8316235a7b4a8d21a10bd27519666489c69b503"
+              ]
+            }
+          body =
+            utf8
+              "token=xyzz0WbapA4vBCDEFasx0q6G&team_id=T1DC2JH3J&team_domain=testteamnow&channel_id=G8PSS9T3V&channel_name=foobar&user_id=U2CERLKJA&user_name=roadrunner&command=%2Fwebhook-collect&text=&response_url=https%3A%2F%2Fhooks.slack.com%2Fcommands%2FT1DC2JH3J%2F397700885554%2F96rGlfmibIGlgcZRskXaIFfN&trigger_id=398738663015.47445629121.803a0bc887a14d10d2c447fce8b6703c"
+        Revolio.authorizeRequest secret request body `Hspec.shouldBe` Right ()
 
   Hspec.describe "Type" $ do
 
@@ -29,62 +55,61 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
       Hspec.describe "textToAction" $ do
 
         Hspec.it "parses a help action" $ do
-          Revolio.textToAction (Text.pack "help")
+          Revolio.textToAction (text "help")
             `Hspec.shouldBe` Right Revolio.ActionHelp
 
         Hspec.it "parses a setup action" $ do
           let
             action = Revolio.ActionSetup
-              (Revolio.textToPaychexLoginId $ Text.pack "username")
-              (Revolio.textToPaychexPassword $ Text.pack "password")
-          Revolio.textToAction (Text.pack "setup username password")
+              (Revolio.textToPaychexLoginId $ text "username")
+              (Revolio.textToPaychexPassword $ text "password")
+          Revolio.textToAction (text "setup username password")
             `Hspec.shouldBe` Right action
 
         Hspec.it "parses a clock in action" $ do
-          Revolio.textToAction (Text.pack "in")
+          Revolio.textToAction (text "in")
             `Hspec.shouldBe` Right (Revolio.ActionClock Revolio.DirectionIn)
 
         Hspec.it "parses a clock out action" $ do
-          Revolio.textToAction (Text.pack "out")
+          Revolio.textToAction (text "out")
             `Hspec.shouldBe` Right (Revolio.ActionClock Revolio.DirectionOut)
 
         Hspec.it "rejects an invalid action" $ do
-          Revolio.textToAction (Text.pack "invalid action")
+          Revolio.textToAction (text "invalid action")
             `Hspec.shouldSatisfy` Either.isLeft
 
       Hspec.describe "actionToText" $ do
 
         Hspec.it "converts an action into text" $ do
           Revolio.actionToText (Revolio.ActionClock Revolio.DirectionIn)
-            `Hspec.shouldBe` Text.pack "in"
+            `Hspec.shouldBe` text "in"
           Revolio.actionToText (Revolio.ActionClock Revolio.DirectionOut)
-            `Hspec.shouldBe` Text.pack "out"
-          Revolio.actionToText Revolio.ActionHelp
-            `Hspec.shouldBe` Text.pack "help"
+            `Hspec.shouldBe` text "out"
+          Revolio.actionToText Revolio.ActionHelp `Hspec.shouldBe` text "help"
           Revolio.actionToText
               (Revolio.ActionSetup
-                (Revolio.textToPaychexLoginId $ Text.singleton 'u')
-                (Revolio.textToPaychexPassword $ Text.singleton 'p')
+                (Revolio.textToPaychexLoginId $ text "u")
+                (Revolio.textToPaychexPassword $ text "p")
               )
-            `Hspec.shouldBe` Text.pack "setup u p"
+            `Hspec.shouldBe` text "setup u p"
 
     Hspec.describe "Command" $ do
 
       Hspec.describe "textToCommand" $ do
 
         Hspec.it "parses a clock command" $ do
-          Revolio.textToCommand (Text.pack "/clock")
+          Revolio.textToCommand (text "/clock")
             `Hspec.shouldBe` Right Revolio.CommandClock
 
         Hspec.it "rejects an invalid command" $ do
-          Revolio.textToCommand (Text.pack "invalid command")
+          Revolio.textToCommand (text "invalid command")
             `Hspec.shouldSatisfy` Either.isLeft
 
       Hspec.describe "commandToText" $ do
 
         Hspec.it "converts a command into text" $ do
           Revolio.commandToText Revolio.CommandClock
-            `Hspec.shouldBe` Text.pack "/clock"
+            `Hspec.shouldBe` text "/clock"
 
     Hspec.describe "Config" $ do
 
@@ -111,7 +136,7 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
       Hspec.it "sets the Paychex client ID" $ do
         config <- either fail pure . snd $ Revolio.getConfig "" ["-c", "it"]
         Revolio.configClient config
-          `Hspec.shouldBe` Revolio.textToPaychexClientId (Text.pack "it")
+          `Hspec.shouldBe` Revolio.textToPaychexClientId (text "it")
 
       Hspec.it "sets the host" $ do
         config <- either fail pure . snd $ Revolio.getConfig "" ["-h", "*"]
@@ -124,53 +149,53 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
       Hspec.it "sets the Slack signing secret" $ do
         config <- either fail pure . snd $ Revolio.getConfig "" ["-s", "it"]
         Revolio.configSecret config
-          `Hspec.shouldBe` Revolio.textToSlackSigningSecret (Text.pack "it")
+          `Hspec.shouldBe` Revolio.textToSlackSigningSecret (text "it")
 
     Hspec.describe "Direction" $ do
 
       Hspec.it "can be used as a query value" $ do
         Http.toQueryValue Revolio.DirectionIn
-          `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.singleton '2')
+          `Hspec.shouldBe` (Just $ utf8 "2")
         Http.toQueryValue Revolio.DirectionOut
-          `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.singleton '3')
+          `Hspec.shouldBe` (Just $ utf8 "3")
 
       Hspec.describe "textToDirection" $ do
 
         Hspec.it "parses a valid direction" $ do
-          Revolio.textToDirection (Text.pack "in")
+          Revolio.textToDirection (text "in")
             `Hspec.shouldBe` Right Revolio.DirectionIn
-          Revolio.textToDirection (Text.pack "out")
+          Revolio.textToDirection (text "out")
             `Hspec.shouldBe` Right Revolio.DirectionOut
 
         Hspec.it "rejects an invalid direction" $ do
-          Revolio.textToDirection (Text.pack "invalid direction")
+          Revolio.textToDirection (text "invalid direction")
             `Hspec.shouldSatisfy` Either.isLeft
 
       Hspec.describe "directionToText" $ do
 
         Hspec.it "converts a direction into text" $ do
           Revolio.directionToText Revolio.DirectionIn
-            `Hspec.shouldBe` Text.pack "in"
+            `Hspec.shouldBe` text "in"
           Revolio.directionToText Revolio.DirectionOut
-            `Hspec.shouldBe` Text.pack "out"
+            `Hspec.shouldBe` text "out"
 
     Hspec.describe "PaychexClientId" $ do
 
       Hspec.it "can be used as a query value" $ do
-        (Http.toQueryValue . Revolio.textToPaychexClientId $ Text.pack "123")
-          `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.pack "123")
+        (Http.toQueryValue . Revolio.textToPaychexClientId $ text "123")
+          `Hspec.shouldBe` (Just $ utf8 "123")
 
     Hspec.describe "PaychexLoginId" $ do
 
       Hspec.it "can be used as a query value" $ do
-        (Http.toQueryValue . Revolio.textToPaychexLoginId $ Text.pack "you")
-          `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.pack "you")
+        (Http.toQueryValue . Revolio.textToPaychexLoginId $ text "you")
+          `Hspec.shouldBe` (Just $ utf8 "you")
 
     Hspec.describe "PaychexPassword" $ do
 
       Hspec.it "can be used as a query value" $ do
-        (Http.toQueryValue . Revolio.textToPaychexPassword $ Text.pack "axe")
-          `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.pack "axe")
+        (Http.toQueryValue . Revolio.textToPaychexPassword $ text "axe")
+          `Hspec.shouldBe` (Just $ utf8 "axe")
 
     Hspec.describe "Payload" $ do
 
@@ -187,10 +212,9 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
               { Revolio.payloadAction = Revolio.ActionHelp
               , Revolio.payloadCommand = Revolio.CommandClock
               , Revolio.payloadResponseUrl =
-                either undefined id . Revolio.textToUrl $ Text.pack
+                either undefined id . Revolio.textToUrl $ text
                   "http://slack.test"
-              , Revolio.payloadUserId = Revolio.textToSlackUserId
-                $ Text.pack "U1"
+              , Revolio.payloadUserId = Revolio.textToSlackUserId $ text "U1"
               }
           parse
               [ ("user_id", "U1")
@@ -207,16 +231,15 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
 
       Hspec.it "can be converted into JSON" $ do
         let
-          expected =
-            LazyByteString.fromStrict . Encoding.encodeUtf8 $ Text.pack
-              "{\"text\":\":wave:\",\"response_type\":\"ephemeral\"}"
-        (Aeson.encode . Revolio.textToSlackMessage $ Text.pack ":wave:")
+          expected = LazyByteString.fromStrict
+            $ utf8 "{\"text\":\":wave:\",\"response_type\":\"ephemeral\"}"
+        (Aeson.encode . Revolio.textToSlackMessage $ text ":wave:")
           `Hspec.shouldBe` expected
 
     Hspec.describe "SlackSigningSecret" $ do
 
       Hspec.it "can be used as a byte array" $ do
-        (Memory.length . Revolio.textToSlackSigningSecret $ Text.pack "123")
+        (Memory.length . Revolio.textToSlackSigningSecret $ text "123")
           `Hspec.shouldBe` 3
 
     Hspec.describe "Url" $ do
@@ -224,19 +247,19 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
       Hspec.describe "textToUrl" $ do
 
         Hspec.it "fails with an invalid URL" $ do
-          Revolio.textToUrl (Text.pack "invalid URL")
+          Revolio.textToUrl (text "invalid URL")
             `Hspec.shouldSatisfy` Either.isLeft
 
         Hspec.it "success with a valid URL" $ do
-          Revolio.textToUrl (Text.pack "http://revolio.test")
+          Revolio.textToUrl (text "http://revolio.test")
             `Hspec.shouldSatisfy` Either.isRight
 
       Hspec.describe "urlToText" $ do
 
         Hspec.it "renders a URL as text" $ do
-          let text = Text.pack "http://revolio.test"
-          url <- either fail pure $ Revolio.textToUrl text
-          Revolio.urlToText url `Hspec.shouldBe` text
+          let expected = text "http://revolio.test"
+          url <- either fail pure $ Revolio.textToUrl expected
+          Revolio.urlToText url `Hspec.shouldBe` expected
 
   Hspec.describe "Version" $ do
 
@@ -252,6 +275,12 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
 
       Hspec.it "has no tags" $ do
         versionTags Revolio.version `Hspec.shouldSatisfy` null
+
+text :: String -> Text.Text
+text = Text.pack
+
+utf8 :: String -> ByteString.ByteString
+utf8 = Encoding.encodeUtf8 . text
 
 versionTags :: Version.Version -> [String]
 versionTags (Version.Version _ tags) = tags

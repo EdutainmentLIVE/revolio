@@ -1,5 +1,6 @@
 module Revolio.Server
   ( runServer
+  , authorizeRequest
   )
 where
 
@@ -92,7 +93,7 @@ getPayload
   -> ByteString.ByteString
   -> Either String Type.Payload
 getPayload secret request body = do
-  () <- authorize secret request body
+  () <- authorizeRequest secret request body
   Type.queryToPayload body
 
 jsonResponse
@@ -106,12 +107,12 @@ jsonResponse status headers json = Wai.responseLBS
   ((Http.hContentType, utf8 "application/json") : headers)
   (Aeson.encode json)
 
-authorize
+authorizeRequest
   :: Type.SlackSigningSecret
   -> Wai.Request
   -> ByteString.ByteString
   -> Either String ()
-authorize secret request body = do
+authorizeRequest secret request body = do
   let headers = Map.fromList $ Wai.requestHeaders request
   timestamp <- getHeader headers "X-Slack-Request-Timestamp"
   let message = utf8 "v0:" <> timestamp <> utf8 ":" <> body

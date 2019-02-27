@@ -1,6 +1,7 @@
 module Revolio
   ( Revolio.Main.defaultMain
   , Revolio.Server.runServer
+  , Revolio.Server.authorizeRequest
   , Revolio.Worker.runWorker
   , Revolio.Type.Action(..)
   , Revolio.Type.textToAction
