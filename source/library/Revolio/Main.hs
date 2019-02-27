@@ -103,15 +103,13 @@ handle config queue request respond = do
             else
               let text = payloadText payload
               in
-                case parseAction text of
-                  Nothing ->
+                case Type.textToAction text of
+                  Left problem ->
                     respond
                       . Wai.responseLBS Http.badRequest400 []
                       . LazyByteString.fromStrict
-                      . toUtf8
-                      $ "invalid text: "
-                      <> show text
-                  Just action -> do
+                      $ toUtf8 problem
+                  Right action -> do
                     Stm.atomically . Stm.writeTBQueue queue $ makeMessage
                       payload
                       action
@@ -164,33 +162,17 @@ ci :: CaseInsensitive.FoldCase string => string -> CaseInsensitive.CI string
 ci = CaseInsensitive.mk
 
 data Message = Message
-  { messageAction :: Action
+  { messageAction :: Type.Action
   , messageResponseUrl :: Type.Url
   , messageUserId :: Type.SlackUserId
   } deriving (Eq, Show)
 
-makeMessage :: Payload -> Action -> Message
+makeMessage :: Payload -> Type.Action -> Message
 makeMessage payload action = Message
   { messageAction = action
   , messageResponseUrl = payloadResponseUrl payload
   , messageUserId = payloadUserId payload
   }
-
-data Action
-  = Help
-  | Setup Type.PaychexLoginId Type.PaychexPassword
-  | Punch Type.Direction
-  deriving (Eq, Show)
-
-parseAction :: Text.Text -> Maybe Action
-parseAction text = case Text.unpack <$> Text.words text of
-  ["help"] -> Just Help
-  ["in"] -> Just $ Punch Type.DirectionIn
-  ["out"] -> Just $ Punch Type.DirectionOut
-  ["setup", username, password] -> Just $ Setup
-    (Type.textToPaychexLoginId $ Text.pack username)
-    (Type.textToPaychexPassword $ Text.pack password)
-  _ -> Nothing
 
 formMime :: ByteString.ByteString
 formMime = toUtf8 "application/x-www-form-urlencoded"
@@ -238,7 +220,7 @@ worker :: Type.Config -> Queue -> Vault -> IO ()
 worker config queue vault = Monad.forever $ do
   message <- Stm.atomically $ Stm.readTBQueue queue
   case messageAction message of
-    Help -> reply
+    Type.ActionHelp -> reply
       message
       [ "Usage:"
       , "- `/clock help`: Show this help message"
@@ -247,13 +229,13 @@ worker config queue vault = Monad.forever $ do
       , "- `/clock out`: Punch out"
       ]
 
-    Setup username password -> do
+    Type.ActionSetup username password -> do
       Stm.atomically . Stm.modifyTVar vault $ Map.insert
         (messageUserId message)
         (username, password)
       reply message ["Successfully saved your credentials."]
 
-    Punch direction -> do
+    Type.ActionClock direction -> do
       Just (username, password) <- Map.lookup (messageUserId message)
         <$> Stm.readTVarIO vault
       (cookie, token) <- logIn config username password

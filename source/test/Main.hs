@@ -21,6 +21,34 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
 
   Hspec.describe "Type" $ do
 
+    Hspec.describe "Action" $ do
+
+      Hspec.describe "textToAction" $ do
+
+        Hspec.it "parses a help action" $ do
+          Revolio.textToAction (Text.pack "help")
+            `Hspec.shouldBe` Right Revolio.ActionHelp
+
+        Hspec.it "parses a setup action" $ do
+          let
+            action = Revolio.ActionSetup
+              (Revolio.textToPaychexLoginId $ Text.pack "username")
+              (Revolio.textToPaychexPassword $ Text.pack "password")
+          Revolio.textToAction (Text.pack "setup username password")
+            `Hspec.shouldBe` Right action
+
+        Hspec.it "parses a clock in action" $ do
+          Revolio.textToAction (Text.pack "in")
+            `Hspec.shouldBe` Right (Revolio.ActionClock Revolio.DirectionIn)
+
+        Hspec.it "parses a clock out action" $ do
+          Revolio.textToAction (Text.pack "out")
+            `Hspec.shouldBe` Right (Revolio.ActionClock Revolio.DirectionOut)
+
+        Hspec.it "rejects an invalid action" $ do
+          Revolio.textToAction (Text.pack "invalid action")
+            `Hspec.shouldSatisfy` Either.isLeft
+
     Hspec.describe "Config" $ do
 
       Hspec.it "returns the default config" $ do
@@ -68,6 +96,18 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
           `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.singleton '2')
         Http.toQueryValue Revolio.DirectionOut
           `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.singleton '3')
+
+      Hspec.describe "textToDirection" $ do
+
+        Hspec.it "parses a valid direction" $ do
+          Revolio.textToDirection (Text.pack "in")
+            `Hspec.shouldBe` Right Revolio.DirectionIn
+          Revolio.textToDirection (Text.pack "out")
+            `Hspec.shouldBe` Right Revolio.DirectionOut
+
+        Hspec.it "rejects an invalid direction" $ do
+          Revolio.textToDirection (Text.pack "invalid direction")
+            `Hspec.shouldSatisfy` Either.isLeft
 
     Hspec.describe "PaychexClientId" $ do
 
