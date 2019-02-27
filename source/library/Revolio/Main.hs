@@ -44,7 +44,7 @@ defaultMain = do
   vault <- Stm.newTVarIO Map.empty
   Async.race_ (server config queue) (worker config queue vault)
 
-type Queue = Stm.TBQueue Message
+type Queue = Stm.TBQueue Payload
 
 type Vault
   = Stm.TVar
@@ -89,21 +89,10 @@ handle config queue request respond = do
           . Wai.responseLBS Http.badRequest400 []
           . LazyByteString.fromStrict
           $ toUtf8 problem
-      Right payload ->
-        let text = payloadText payload
-        in
-          case Type.textToAction text of
-            Left problem ->
-              respond
-                . Wai.responseLBS Http.badRequest400 []
-                . LazyByteString.fromStrict
-                $ toUtf8 problem
-            Right action -> do
-              Stm.atomically . Stm.writeTBQueue queue $ makeMessage
-                payload
-                action
-              respond . jsonResponse Http.ok200 [] $ stringToSlackMessage
-                "Working on it!"
+      Right payload -> do
+        Stm.atomically $ Stm.writeTBQueue queue payload
+        respond . jsonResponse Http.ok200 [] $ stringToSlackMessage
+          "Working on it!"
 
 jsonResponse
   :: Aeson.ToJSON body
@@ -150,26 +139,13 @@ toUtf8 = Encoding.encodeUtf8 . Text.pack
 ci :: CaseInsensitive.FoldCase string => string -> CaseInsensitive.CI string
 ci = CaseInsensitive.mk
 
-data Message = Message
-  { messageAction :: Type.Action
-  , messageResponseUrl :: Type.Url
-  , messageUserId :: Type.SlackUserId
-  } deriving (Eq, Show)
-
-makeMessage :: Payload -> Type.Action -> Message
-makeMessage payload action = Message
-  { messageAction = action
-  , messageResponseUrl = payloadResponseUrl payload
-  , messageUserId = payloadUserId payload
-  }
-
 formMime :: ByteString.ByteString
 formMime = toUtf8 "application/x-www-form-urlencoded"
 
 data Payload = Payload
-  { payloadCommand :: Type.Command
+  { payloadAction :: Type.Action
+  , payloadCommand :: Type.Command
   , payloadResponseUrl :: Type.Url
-  , payloadText :: Text.Text
   , payloadUserId :: Type.SlackUserId
   } deriving (Eq, Show)
 
@@ -178,10 +154,15 @@ parsePayload query =
   let q = Map.fromList query
   in
     Payload
-    <$> require q "command" parseCommand
+    <$> require q "text" parseAction
+    <*> require q "command" parseCommand
     <*> require q "response_url" parseUri
-    <*> require q "text" parseText
     <*> require q "user_id" (fmap Type.textToSlackUserId . parseText)
+
+parseAction :: ByteString.ByteString -> Either String Type.Action
+parseAction byteString = do
+  text <- parseText byteString
+  Type.textToAction text
 
 parseCommand :: ByteString.ByteString -> Either String Type.Command
 parseCommand byteString = do
@@ -195,7 +176,8 @@ parseUri byteString = do
 
 parseText :: ByteString.ByteString -> Either String Text.Text
 parseText byteString = case Encoding.decodeUtf8' byteString of
-  Left unicodeException -> Left $ show unicodeException
+  Left problem ->
+    Left $ "invalid UTF-8 (" <> show problem <> "): " <> show byteString
   Right text -> Right text
 
 require
@@ -212,10 +194,10 @@ require query name convert =
 
 worker :: Type.Config -> Queue -> Vault -> IO ()
 worker config queue vault = Monad.forever $ do
-  message <- Stm.atomically $ Stm.readTBQueue queue
-  case messageAction message of
+  payload <- Stm.atomically $ Stm.readTBQueue queue
+  case payloadAction payload of
     Type.ActionHelp -> reply
-      message
+      payload
       [ "Usage:"
       , "- `/clock help`: Show this help message"
       , "- `/clock setup USER PASS`: Set up your username and password"
@@ -225,16 +207,16 @@ worker config queue vault = Monad.forever $ do
 
     Type.ActionSetup username password -> do
       Stm.atomically . Stm.modifyTVar vault $ Map.insert
-        (messageUserId message)
+        (payloadUserId payload)
         (username, password)
-      reply message ["Successfully saved your credentials."]
+      reply payload ["Successfully saved your credentials."]
 
     Type.ActionClock direction -> do
-      Just (username, password) <- Map.lookup (messageUserId message)
+      Just (username, password) <- Map.lookup (payloadUserId payload)
         <$> Stm.readTVarIO vault
       (cookie, token) <- logIn config username password
       punch cookie token direction
-      reply message ["Saved punch!"]
+      reply payload ["Saved punch!"]
 
 renderUri :: Type.Url -> String
 renderUri = Text.unpack . Type.urlToText
@@ -245,10 +227,10 @@ stringToSlackMessage = Type.textToSlackMessage . Text.pack
 jsonMime :: ByteString.ByteString
 jsonMime = toUtf8 "application/json"
 
-reply :: Message -> [String] -> IO ()
-reply message strings = do
+reply :: Payload -> [String] -> IO ()
+reply payload strings = do
   manager <- Tls.getGlobalManager
-  request <- Client.parseUrlThrow . renderUri $ messageResponseUrl message
+  request <- Client.parseUrlThrow . renderUri $ payloadResponseUrl payload
   Monad.void $ Client.httpLbs
     request
       { Client.method = Http.methodPost
