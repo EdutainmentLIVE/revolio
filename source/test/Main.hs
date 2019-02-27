@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
 {- HLINT ignore "Redundant do" -}
 
 module Main

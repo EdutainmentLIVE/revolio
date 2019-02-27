@@ -29,41 +29,42 @@ settings :: Type.Config -> Warp.Settings
 settings config =
   Warp.setHost (Type.configHost config)
     . Warp.setPort (Type.configPort config)
-    $ Warp.setServerName mempty Warp.defaultSettings
+    $ Warp.setServerName ByteString.empty Warp.defaultSettings
 
 middleware :: Wai.Middleware
 middleware = Middleware.logStdout
 
 application :: Type.SlackSigningSecret -> Type.Queue -> Wai.Application
-application secret queue request respond =
+application secret queue request respond = do
   let
     path = Text.unpack <$> Wai.pathInfo request
     method = Http.parseMethod $ Wai.requestMethod request
-  in case path of
+  response <- case path of
     [] -> case method of
-      Right Http.POST -> handle secret queue request respond
-      _ -> respond $ Wai.responseBuilder Http.methodNotAllowed405 [] mempty
-    _ -> respond $ Wai.responseBuilder Http.notFound404 [] mempty
+      Right Http.POST -> handler secret queue request
+      _ -> pure $ jsonResponse Http.methodNotAllowed405 [] Aeson.Null
+    _ -> pure $ jsonResponse Http.notFound404 [] Aeson.Null
+  respond response
 
-handle :: Type.SlackSigningSecret -> Type.Queue -> Wai.Application
-handle secret queue request respond = do
+handler
+  :: Type.SlackSigningSecret -> Type.Queue -> Wai.Request -> IO Wai.Response
+handler secret queue request = do
   body <- LazyByteString.toStrict <$> Wai.lazyRequestBody request
-  case authorize secret request body of
-    Left problem ->
-      respond
-        . Wai.responseLBS Http.forbidden403 []
-        . LazyByteString.fromStrict
-        $ toUtf8 problem
-    Right () -> case Type.queryToPayload body of
-      Left problem ->
-        respond
-          . Wai.responseLBS Http.badRequest400 []
-          . LazyByteString.fromStrict
-          $ toUtf8 problem
-      Right payload -> do
-        Type.enqueue queue payload
-        respond . jsonResponse Http.ok200 [] $ stringToSlackMessage
-          "Working on it!"
+  case getPayload secret request body of
+    Left problem -> pure $ jsonResponse Http.badRequest400 [] problem
+    Right payload -> do
+      Type.enqueue queue payload
+      pure . jsonResponse Http.ok200 [] . Type.textToSlackMessage $ Text.pack
+        "Working on it!"
+
+getPayload
+  :: Type.SlackSigningSecret
+  -> Wai.Request
+  -> ByteString.ByteString
+  -> Either String Type.Payload
+getPayload secret request body = do
+  () <- authorize secret request body
+  Type.queryToPayload body
 
 jsonResponse
   :: Aeson.ToJSON body
@@ -73,7 +74,7 @@ jsonResponse
   -> Wai.Response
 jsonResponse status headers json = Wai.responseLBS
   status
-  ((Http.hContentType, jsonMime) : headers)
+  ((Http.hContentType, utf8 "application/json") : headers)
   (Aeson.encode json)
 
 authorize
@@ -82,37 +83,40 @@ authorize
   -> ByteString.ByteString
   -> Either String ()
 authorize secret request body = do
-  let
-    headers = Map.fromList $ Wai.requestHeaders request
-    timestampKey = ci $ toUtf8 "X-Slack-Request-Timestamp"
-    signatureKey = ci $ toUtf8 "X-Slack-Signature"
-  timestamp <- case Map.lookup timestampKey headers of
-    Nothing -> Left $ "missing key: " <> show timestampKey
-    Just x -> Right x
-  signature <- case Map.lookup signatureKey headers of
-    Nothing -> Left $ "missing key: " <> show signatureKey
-    Just byteString ->
-      case ByteString.stripPrefix (toUtf8 "v0=") byteString of
-        Nothing -> Left $ "malformed signature: " <> show byteString
-        Just x -> Memory.convertFromBase Memory.Base16 x
-  digest <- case Crypto.digestFromByteString signature of
-    Nothing ->
-      Left $ "invalid signature: " <> show (signature :: ByteString.ByteString)
-    Just x -> Right x
-  let
-    expected = Crypto.HMAC digest :: Crypto.HMAC Crypto.SHA256
-    message = toUtf8 "v0:" <> timestamp <> toUtf8 ":" <> body
-    actual = Crypto.hmac secret message :: Crypto.HMAC Crypto.SHA256
-  if actual == expected then Right () else Left "not authorized"
+  let headers = Map.fromList $ Wai.requestHeaders request
+  timestamp <- getHeader headers "X-Slack-Request-Timestamp"
+  let message = utf8 "v0:" <> timestamp <> utf8 ":" <> body
+  digest <- getDigest headers
+  if Crypto.hmac secret message == Crypto.HMAC digest
+    then Right ()
+    else Left "not authorized"
 
-toUtf8 :: String -> ByteString.ByteString
-toUtf8 = Encoding.encodeUtf8 . Text.pack
+type Headers = Map.Map Http.HeaderName ByteString.ByteString
+
+getDigest :: Headers -> Either String (Crypto.Digest Crypto.SHA256)
+getDigest headers = do
+  value <- getHeader headers "X-Slack-Signature"
+  signature <- parseSignature value
+  convertDigest signature
+
+getHeader :: Headers -> String -> Either String ByteString.ByteString
+getHeader headers name = case Map.lookup (ci $ utf8 name) headers of
+  Nothing -> Left $ "missing required key: " <> show name
+  Just value -> Right value
+
+parseSignature :: ByteString.ByteString -> Either String ByteString.ByteString
+parseSignature value = case ByteString.stripPrefix (utf8 "v0=") value of
+  Nothing -> Left $ "malformed signature: " <> show value
+  Just signature -> Memory.convertFromBase Memory.Base16 signature
+
+convertDigest
+  :: ByteString.ByteString -> Either String (Crypto.Digest Crypto.SHA256)
+convertDigest signature = case Crypto.digestFromByteString signature of
+  Nothing -> Left $ "invalid signature: " <> show signature
+  Just digest -> Right digest
+
+utf8 :: String -> ByteString.ByteString
+utf8 = Encoding.encodeUtf8 . Text.pack
 
 ci :: CaseInsensitive.FoldCase string => string -> CaseInsensitive.CI string
 ci = CaseInsensitive.mk
-
-stringToSlackMessage :: String -> Type.SlackMessage
-stringToSlackMessage = Type.textToSlackMessage . Text.pack
-
-jsonMime :: ByteString.ByteString
-jsonMime = toUtf8 "application/json"
