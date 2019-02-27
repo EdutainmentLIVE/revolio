@@ -5,7 +5,9 @@ module Main
   )
 where
 
+import qualified Data.Aeson as Aeson
 import qualified Data.ByteArray as Memory
+import qualified Data.ByteString.Lazy as LazyByteString
 import qualified Data.Either as Either
 import qualified Data.List as List
 import qualified Data.String as String
@@ -150,6 +152,16 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
       Hspec.it "can be used as a query value" $ do
         (Http.toQueryValue . Revolio.textToPaychexPassword $ Text.pack "axe")
           `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.pack "axe")
+
+    Hspec.describe "SlackMessage" $ do
+
+      Hspec.it "can be converted into JSON" $ do
+        let
+          expected =
+            LazyByteString.fromStrict . Encoding.encodeUtf8 $ Text.pack
+              "{\"text\":\":wave:\",\"response_type\":\"ephemeral\"}"
+        (Aeson.encode . Revolio.textToSlackMessage $ Text.pack ":wave:")
+          `Hspec.shouldBe` expected
 
     Hspec.describe "SlackSigningSecret" $ do
 

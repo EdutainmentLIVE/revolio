@@ -245,18 +245,8 @@ worker config queue vault = Monad.forever $ do
 renderUri :: Type.Url -> String
 renderUri = Text.unpack . Type.urlToText
 
-newtype SlackMessage = SlackMessage
-  { slackMessageToText :: Text.Text
-  } deriving (Eq, Show)
-
-instance Aeson.ToJSON SlackMessage where
-  toJSON slackMessage = Aeson.object
-    [ Text.pack "response_type" Aeson..= "ephemeral"
-    , Text.pack "text" Aeson..= slackMessageToText slackMessage
-    ]
-
-stringToSlackMessage :: String -> SlackMessage
-stringToSlackMessage = SlackMessage . Text.pack
+stringToSlackMessage :: String -> Type.SlackMessage
+stringToSlackMessage = Type.textToSlackMessage . Text.pack
 
 jsonMime :: ByteString.ByteString
 jsonMime = toUtf8 "application/json"

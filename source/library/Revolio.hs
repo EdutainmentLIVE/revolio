@@ -18,6 +18,9 @@ module Revolio
   , Revolio.Type.PaychexPassword
   , Revolio.Type.textToPaychexPassword
   , Revolio.Type.paychexPasswordToText
+  , Revolio.Type.SlackMessage
+  , Revolio.Type.textToSlackMessage
+  , Revolio.Type.slackMessageToText
   , Revolio.Type.SlackSigningSecret
   , Revolio.Type.textToSlackSigningSecret
   , Revolio.Type.slackSigningSecretToText

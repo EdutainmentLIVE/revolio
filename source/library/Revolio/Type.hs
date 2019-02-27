@@ -17,6 +17,9 @@ module Revolio.Type
   , Revolio.Type.PaychexPassword.PaychexPassword
   , Revolio.Type.PaychexPassword.textToPaychexPassword
   , Revolio.Type.PaychexPassword.paychexPasswordToText
+  , Revolio.Type.SlackMessage.SlackMessage
+  , Revolio.Type.SlackMessage.textToSlackMessage
+  , Revolio.Type.SlackMessage.slackMessageToText
   , Revolio.Type.SlackSigningSecret.SlackSigningSecret
   , Revolio.Type.SlackSigningSecret.textToSlackSigningSecret
   , Revolio.Type.SlackSigningSecret.slackSigningSecretToText
@@ -35,6 +38,7 @@ import qualified Revolio.Type.Direction
 import qualified Revolio.Type.PaychexClientId
 import qualified Revolio.Type.PaychexLoginId
 import qualified Revolio.Type.PaychexPassword
+import qualified Revolio.Type.SlackMessage
 import qualified Revolio.Type.SlackSigningSecret
 import qualified Revolio.Type.SlackUserId
 import qualified Revolio.Type.Url
