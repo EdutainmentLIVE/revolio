@@ -53,6 +53,8 @@ library
   other-modules:
     Paths_revolio
     Revolio.Main
+    Revolio.Type
+    Revolio.Type.PaychexClientId
     Revolio.Version
 
 executable revolio

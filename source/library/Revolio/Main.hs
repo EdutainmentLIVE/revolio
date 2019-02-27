@@ -25,6 +25,7 @@ import qualified Network.URI as Uri
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Middleware
+import qualified Revolio.Type as Type
 import qualified Revolio.Version as Version
 import qualified System.Console.GetOpt as Console
 import qualified System.Environment as Environment
@@ -52,7 +53,7 @@ defaultMain = do
   Async.race_ (server config queue) (worker config queue vault)
 
 data Config = Config
-  { configClient :: Text.Text
+  { configClient :: Type.PaychexClientId
   , configHost :: Warp.HostPreference
   , configPort :: Warp.Port
   , configSecret :: ByteString.ByteString
@@ -62,7 +63,7 @@ data Config = Config
 
 defaultConfig :: Config
 defaultConfig = Config
-  { configClient = Text.pack "0"
+  { configClient = Type.textToPaychexClientId $ Text.pack "0"
   , configHost = String.fromString "127.0.0.1"
   , configPort = 8080
   , configSecret = toUtf8 "00000000000000000000000000000000"
@@ -109,7 +110,9 @@ clientOption = Console.Option
   ['c']
   ["client"]
   (Console.ReqArg
-    (\string config -> pure config { configClient = Text.pack string })
+    (\string config ->
+      pure config { configClient = Type.textToPaychexClientId $ Text.pack string }
+    )
     "CLIENT"
   )
   "set the Paychex client ID"
@@ -427,11 +430,11 @@ logIn config username password = do
       , Client.requestHeaders = [(Http.hContentType, formMime)]
       , Client.requestBody =
         Client.RequestBodyBS . Http.renderQuery False $ Http.toQuery
-          [ ("__VIEWSTATE", "")
-          , ("btnLogin", "Login")
-          , ("txtCustomerAlias", Text.unpack $ configClient config)
-          , ("txtLoginID", Text.unpack username)
-          , ("txtPassword", Text.unpack password)
+          [ ("__VIEWSTATE", Text.empty)
+          , ("btnLogin", Text.pack "Login")
+          , ("txtCustomerAlias", Type.paychexClientIdToText $ configClient config)
+          , ("txtLoginID", username)
+          , ("txtPassword", password)
           ]
       }
     manager

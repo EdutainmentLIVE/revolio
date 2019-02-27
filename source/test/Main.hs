@@ -6,12 +6,23 @@ module Main
 where
 
 import qualified Data.List as List
+import qualified Data.Text as Text
+import qualified Data.Text.Encoding as Encoding
 import qualified Data.Version as Version
+import qualified Network.HTTP.Types.QueryLike as Http
 import qualified Revolio
 import qualified Test.Hspec as Hspec
 
 main :: IO ()
 main = Hspec.hspec . Hspec.describe "Revolio" $ do
+
+  Hspec.describe "Type" $ do
+
+    Hspec.describe "PaychexClientId" $ do
+
+      Hspec.it "can be converted into a query value" $ do
+        (Http.toQueryValue . Revolio.textToPaychexClientId $ Text.pack "123")
+          `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.pack "123")
 
   Hspec.describe "Version" $ do
 
