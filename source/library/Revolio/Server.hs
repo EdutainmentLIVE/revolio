@@ -11,6 +11,7 @@ import qualified Data.ByteString as ByteString
 import qualified Data.ByteString.Lazy as LazyByteString
 import qualified Data.CaseInsensitive as CaseInsensitive
 import qualified Data.Map as Map
+import qualified Data.String as String
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Encoding
 import qualified Network.HTTP.Types as Http
@@ -18,6 +19,7 @@ import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Middleware
 import qualified Revolio.Type as Type
+import qualified Text.Printf as Printf
 
 runServer :: Type.Config -> Type.Queue -> IO ()
 runServer config queue =
@@ -27,9 +29,33 @@ runServer config queue =
 
 settings :: Type.Config -> Warp.Settings
 settings config =
-  Warp.setHost (Type.configHost config)
+  Warp.setBeforeMainLoop (beforeMainLoop config)
+    . Warp.setHost (Type.configHost config)
     . Warp.setPort (Type.configPort config)
+    . Warp.setOnExceptionResponse onExceptionResponse
     $ Warp.setServerName ByteString.empty Warp.defaultSettings
+
+beforeMainLoop :: Type.Config -> IO ()
+beforeMainLoop config = do
+  let
+    host = formatHost $ Type.configHost config
+    port = Type.configPort config
+  Printf.printf "Listening on %s:%d\n" host port
+
+formatHost :: Warp.HostPreference -> String
+formatHost host
+  | host == String.fromString "*" = "*"
+  | host == String.fromString "*4" = "*4"
+  | host == String.fromString "!4" = "!4"
+  | host == String.fromString "*6" = "*6"
+  | host == String.fromString "!6" = "!6"
+  | otherwise = dropEnd 1 . drop 6 $ show host
+
+dropEnd :: Int -> [a] -> [a]
+dropEnd n l = fmap fst . zip l $ drop n l
+
+onExceptionResponse :: exception -> Wai.Response
+onExceptionResponse _ = jsonResponse Http.internalServerError500 [] Aeson.Null
 
 middleware :: Wai.Middleware
 middleware = Middleware.logStdout
