@@ -15,6 +15,9 @@ module Revolio.Type
   , Revolio.Type.SlackSigningSecret.SlackSigningSecret
   , Revolio.Type.SlackSigningSecret.textToSlackSigningSecret
   , Revolio.Type.SlackSigningSecret.slackSigningSecretToText
+  , Revolio.Type.SlackUserId.SlackUserId
+  , Revolio.Type.SlackUserId.textToSlackUserId
+  , Revolio.Type.SlackUserId.slackUserIdToText
   )
 where
 
@@ -24,3 +27,4 @@ import qualified Revolio.Type.PaychexClientId
 import qualified Revolio.Type.PaychexLoginId
 import qualified Revolio.Type.PaychexPassword
 import qualified Revolio.Type.SlackSigningSecret
+import qualified Revolio.Type.SlackUserId

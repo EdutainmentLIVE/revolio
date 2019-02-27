@@ -16,6 +16,9 @@ module Revolio
   , Revolio.Type.SlackSigningSecret
   , Revolio.Type.textToSlackSigningSecret
   , Revolio.Type.slackSigningSecretToText
+  , Revolio.Type.SlackUserId
+  , Revolio.Type.textToSlackUserId
+  , Revolio.Type.slackUserIdToText
   , Revolio.Version.version
   , Revolio.Version.versionString
   )

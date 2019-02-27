@@ -48,7 +48,8 @@ defaultMain = do
 type Queue = Stm.TBQueue Message
 
 type Vault
-  = Stm.TVar (Map.Map UserId (Type.PaychexLoginId, Type.PaychexPassword))
+  = Stm.TVar
+    (Map.Map Type.SlackUserId (Type.PaychexLoginId, Type.PaychexPassword))
 
 server :: Type.Config -> Queue -> IO ()
 server config queue =
@@ -166,7 +167,7 @@ ci = CaseInsensitive.mk
 data Message = Message
   { messageAction :: Action
   , messageResponseUrl :: Uri.URI
-  , messageUserId :: UserId
+  , messageUserId :: Type.SlackUserId
   } deriving (Eq, Show)
 
 makeMessage :: Payload -> Action -> Message
@@ -199,7 +200,7 @@ data Payload = Payload
   { payloadCommand :: Text.Text
   , payloadResponseUrl :: Uri.URI
   , payloadText :: Text.Text
-  , payloadUserId :: UserId
+  , payloadUserId :: Type.SlackUserId
   } deriving (Eq, Show)
 
 parsePayload :: Http.SimpleQuery -> Either String Payload
@@ -210,7 +211,7 @@ parsePayload query =
     <$> require q "command" parseText
     <*> require q "response_url" parseUri
     <*> require q "text" parseText
-    <*> require q "user_id" (fmap UserId . parseText)
+    <*> require q "user_id" (fmap Type.textToSlackUserId . parseText)
 
 parseUri :: ByteString.ByteString -> Either String Uri.URI
 parseUri byteString = do
@@ -235,10 +236,6 @@ require query name convert =
     case Map.lookup key query of
       Nothing -> Left $ "missing name: " <> show key
       Just value -> convert value
-
-newtype UserId = UserId
-  { userIdToText :: Text.Text
-  } deriving (Eq, Ord, Show)
 
 worker :: Type.Config -> Queue -> Vault -> IO ()
 worker config queue vault = Monad.forever $ do
