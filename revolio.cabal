@@ -2,8 +2,16 @@ cabal-version: 2.4
 
 name: revolio
 version: 1.0.0.0
+synopsis: Punch in and out of Paychex via Slack.
+description: Revolio enables you to punch in and out of Paychex via Slack.
 
-executable revolio
+category: Web
+extra-source-files: README.markdown
+maintainer: Taylor Fausak
+license: ISC
+license-file: LICENSE.markdown
+
+common basics
   build-depends:
     aeson ^>= 1.4.2,
     async ^>= 2.2.1,
@@ -24,8 +32,6 @@ executable revolio
     warp ^>= 3.2.25,
   default-language: Haskell2010
   ghc-options:
-    -rtsopts
-    -threaded
     -Weverything
     -Wno-all-missed-specializations
     -Wno-implicit-prelude
@@ -33,5 +39,20 @@ executable revolio
     -Wno-missing-exported-signatures
     -Wno-safe
     -Wno-unsafe
-  main-is: revolio.hs
+
+common executable
+  import: basics
+  ghc-options: -rtsopts -threaded
+
+library
+  import: basics
+  autogen-modules: Paths_revolio
+  exposed-modules: Revolio
+  hs-source-dirs: source/library
   other-modules: Paths_revolio
+
+executable revolio
+  import: executable
+  build-depends: revolio
+  hs-source-dirs: source/executable
+  main-is: Main.hs

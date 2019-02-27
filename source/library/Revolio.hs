@@ -1,5 +1,5 @@
-module Main
-  ( main
+module Revolio
+  ( defaultMain
   )
 where
 
@@ -33,8 +33,8 @@ import qualified System.Exit as Exit
 import qualified System.IO as IO
 import qualified Text.Read as Read
 
-main :: IO ()
-main = do
+defaultMain :: IO ()
+defaultMain = do
   program <- Environment.getProgName
   arguments <- Environment.getArgs
   let (warnings, result) = getConfig program arguments
