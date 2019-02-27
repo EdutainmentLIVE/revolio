@@ -42,6 +42,7 @@ common basics
 
 common executable
   import: basics
+  build-depends: revolio
   ghc-options: -rtsopts -threaded
 
 library
@@ -53,6 +54,13 @@ library
 
 executable revolio
   import: executable
-  build-depends: revolio
   hs-source-dirs: source/executable
   main-is: Main.hs
+
+test-suite test
+  import: executable
+  build-depends:
+    hspec ^>= 2.6.0,
+  hs-source-dirs: source/test
+  main-is: Main.hs
+  type: exitcode-stdio-1.0
