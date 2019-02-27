@@ -41,11 +41,15 @@ defaultMain = do
 
   queue <- Type.makeQueue
   vault <- Type.makeVault
-  Async.race_ (server config queue) (worker config queue vault)
+  Async.race_
+    (server config queue)
+    (worker (Type.configClient config) queue vault)
 
 server :: Type.Config -> Type.Queue -> IO ()
 server config queue =
-  Warp.runSettings (settings config) . middleware $ application config queue
+  Warp.runSettings (settings config) . middleware $ application
+    (Type.configSecret config)
+    queue
 
 settings :: Type.Config -> Warp.Settings
 settings config =
@@ -56,21 +60,21 @@ settings config =
 middleware :: Wai.Middleware
 middleware = Middleware.logStdout
 
-application :: Type.Config -> Type.Queue -> Wai.Application
-application config queue request respond =
+application :: Type.SlackSigningSecret -> Type.Queue -> Wai.Application
+application secret queue request respond =
   let
     path = Text.unpack <$> Wai.pathInfo request
     method = Http.parseMethod $ Wai.requestMethod request
   in case path of
     [] -> case method of
-      Right Http.POST -> handle config queue request respond
+      Right Http.POST -> handle secret queue request respond
       _ -> respond $ Wai.responseBuilder Http.methodNotAllowed405 [] mempty
     _ -> respond $ Wai.responseBuilder Http.notFound404 [] mempty
 
-handle :: Type.Config -> Type.Queue -> Wai.Application
-handle config queue request respond = do
+handle :: Type.SlackSigningSecret -> Type.Queue -> Wai.Application
+handle secret queue request respond = do
   body <- LazyByteString.toStrict <$> Wai.lazyRequestBody request
-  case authorize config request body of
+  case authorize secret request body of
     Left problem ->
       respond
         . Wai.responseLBS Http.forbidden403 []
@@ -99,8 +103,11 @@ jsonResponse status headers json = Wai.responseLBS
   (Aeson.encode json)
 
 authorize
-  :: Type.Config -> Wai.Request -> ByteString.ByteString -> Either String ()
-authorize config request body = do
+  :: Type.SlackSigningSecret
+  -> Wai.Request
+  -> ByteString.ByteString
+  -> Either String ()
+authorize secret request body = do
   let
     headers = Map.fromList $ Wai.requestHeaders request
     timestampKey = ci $ toUtf8 "X-Slack-Request-Timestamp"
@@ -121,9 +128,7 @@ authorize config request body = do
   let
     expected = Crypto.HMAC digest :: Crypto.HMAC Crypto.SHA256
     message = toUtf8 "v0:" <> timestamp <> toUtf8 ":" <> body
-    actual =
-      Crypto.hmac (Type.configSecret config) message :: Crypto.HMAC
-          Crypto.SHA256
+    actual = Crypto.hmac secret message :: Crypto.HMAC Crypto.SHA256
   if actual == expected then Right () else Left "not authorized"
 
 toUtf8 :: String -> ByteString.ByteString
@@ -135,8 +140,8 @@ ci = CaseInsensitive.mk
 formMime :: ByteString.ByteString
 formMime = toUtf8 "application/x-www-form-urlencoded"
 
-worker :: Type.Config -> Type.Queue -> Type.Vault -> IO ()
-worker config queue vault = Monad.forever $ do
+worker :: Type.PaychexClientId -> Type.Queue -> Type.Vault -> IO ()
+worker client queue vault = Monad.forever $ do
   payload <- Type.dequeue queue
   case Type.payloadAction payload of
     Type.ActionHelp -> reply
@@ -155,7 +160,7 @@ worker config queue vault = Monad.forever $ do
     Type.ActionClock direction -> do
       Right (username, password) <- Type.lookupVault vault
         $ Type.payloadUserId payload
-      (cookie, token) <- logIn config username password
+      (cookie, token) <- logIn client username password
       punch cookie token direction
       reply payload ["Saved punch!"]
 
@@ -183,11 +188,11 @@ reply payload strings = do
     manager
 
 logIn
-  :: Type.Config
+  :: Type.PaychexClientId
   -> Type.PaychexLoginId
   -> Type.PaychexPassword
   -> IO (Client.Cookie, ByteString.ByteString)
-logIn config username password = do
+logIn client username password = do
   manager <- Tls.getGlobalManager
   request <- Client.parseUrlThrow "https://paychex.cloud.centralservers.com"
   response <- Client.httpLbs
@@ -198,9 +203,7 @@ logIn config username password = do
         Client.RequestBodyBS . Http.renderQuery False $ Http.toQuery
           [ ("__VIEWSTATE", Text.empty)
           , ("btnLogin", Text.pack "Login")
-          , ( "txtCustomerAlias"
-            , Type.paychexClientIdToText $ Type.configClient config
-            )
+          , ("txtCustomerAlias", Type.paychexClientIdToText client)
           , ("txtLoginID", Type.paychexLoginIdToText username)
           , ("txtPassword", Type.paychexPasswordToText password)
           ]
