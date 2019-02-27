@@ -50,7 +50,10 @@ library
   autogen-modules: Paths_revolio
   exposed-modules: Revolio
   hs-source-dirs: source/library
-  other-modules: Paths_revolio
+  other-modules:
+    Paths_revolio
+    Revolio.Main
+    Revolio.Version
 
 executable revolio
   import: executable
