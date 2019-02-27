@@ -1,0 +1,37 @@
+cabal-version: 2.4
+
+name: revolio
+version: 1.0.0.0
+
+executable revolio
+  build-depends:
+    aeson ^>= 1.4.2,
+    async ^>= 2.2.1,
+    base ^>= 4.12.0,
+    bytestring ^>= 0.10.8,
+    case-insensitive ^>= 1.2.0,
+    containers ^>= 0.6.0,
+    cryptonite ^>= 0.25,
+    http-client ^>= 0.5.14,
+    http-client-tls ^>= 0.3.5,
+    http-types ^>= 0.12.2,
+    memory ^>= 0.14.18,
+    network-uri ^>= 2.6.1,
+    stm ^>= 2.5.0,
+    text ^>= 1.2.3,
+    wai ^>= 3.2.1,
+    wai-extra ^>= 3.0.24,
+    warp ^>= 3.2.25,
+  default-language: Haskell2010
+  ghc-options:
+    -rtsopts
+    -threaded
+    -Weverything
+    -Wno-all-missed-specializations
+    -Wno-implicit-prelude
+    -Wno-missed-specialisations
+    -Wno-missing-exported-signatures
+    -Wno-safe
+    -Wno-unsafe
+  main-is: revolio.hs
+  other-modules: Paths_revolio
