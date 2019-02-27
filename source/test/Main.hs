@@ -60,9 +60,17 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
         Revolio.configSecret config
           `Hspec.shouldBe` Revolio.textToSlackSigningSecret (Text.pack "it")
 
+    Hspec.describe "Direction" $ do
+
+      Hspec.it "can be used as a query value" $ do
+        Http.toQueryValue Revolio.DirectionIn
+          `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.singleton '2')
+        Http.toQueryValue Revolio.DirectionOut
+          `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.singleton '3')
+
     Hspec.describe "PaychexClientId" $ do
 
-      Hspec.it "can be converted into a query value" $ do
+      Hspec.it "can be used as a query value" $ do
         (Http.toQueryValue . Revolio.textToPaychexClientId $ Text.pack "123")
           `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.pack "123")
 

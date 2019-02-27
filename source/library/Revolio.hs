@@ -3,6 +3,7 @@ module Revolio
   , Revolio.Type.Config(..)
   , Revolio.Type.defaultConfig
   , Revolio.Type.getConfig
+  , Revolio.Type.Direction(..)
   , Revolio.Type.PaychexClientId
   , Revolio.Type.textToPaychexClientId
   , Revolio.Type.paychexClientIdToText

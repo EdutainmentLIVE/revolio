@@ -178,19 +178,17 @@ makeMessage payload action = Message
 data Action
   = Help
   | Setup Text.Text Text.Text
-  | Punch Direction
+  | Punch Type.Direction
   deriving (Eq, Show)
 
 parseAction :: Text.Text -> Maybe Action
 parseAction text = case Text.unpack <$> Text.words text of
   ["help"] -> Just Help
-  ["in"] -> Just $ Punch In
-  ["out"] -> Just $ Punch Out
+  ["in"] -> Just $ Punch Type.DirectionIn
+  ["out"] -> Just $ Punch Type.DirectionOut
   ["setup", username, password] ->
     Just $ Setup (Text.pack username) (Text.pack password)
   _ -> Nothing
-
-data Direction = In | Out deriving (Eq, Show)
 
 formMime :: ByteString.ByteString
 formMime = toUtf8 "application/x-www-form-urlencoded"
@@ -336,7 +334,7 @@ logIn config username password = do
     _ -> fail "missing token"
   pure (cookie, token)
 
-punch :: Client.Cookie -> ByteString.ByteString -> Direction -> IO ()
+punch :: Client.Cookie -> ByteString.ByteString -> Type.Direction -> IO ()
 punch cookie token direction = do
   manager <- Tls.getGlobalManager
   request <-
@@ -351,12 +349,7 @@ punch cookie token direction = do
       , Client.cookieJar = Just $ Client.createCookieJar [cookie]
       , Client.requestBody =
         Client.RequestBodyBS . Http.renderQuery False $ Http.toQuery
-          [ ( "TransactionType"
-            , case direction of
-              In -> "2"
-              Out -> "3"
-            )
-          ]
+          [("TransactionType", direction)]
       }
     manager
   Monad.when
