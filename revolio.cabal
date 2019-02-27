@@ -53,6 +53,7 @@ library
   other-modules:
     Paths_revolio
     Revolio.Main
+    Revolio.Server
     Revolio.Type
     Revolio.Type.Action
     Revolio.Type.Command
@@ -69,6 +70,7 @@ library
     Revolio.Type.Url
     Revolio.Type.Vault
     Revolio.Version
+    Revolio.Worker
 
 executable revolio
   import: executable

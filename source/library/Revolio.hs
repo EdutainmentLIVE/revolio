@@ -1,5 +1,7 @@
 module Revolio
   ( Revolio.Main.defaultMain
+  , Revolio.Server.runServer
+  , Revolio.Worker.runWorker
   , Revolio.Type.Action(..)
   , Revolio.Type.textToAction
   , Revolio.Type.actionToText
@@ -49,5 +51,7 @@ module Revolio
 where
 
 import qualified Revolio.Main
+import qualified Revolio.Server
 import qualified Revolio.Type
 import qualified Revolio.Version
+import qualified Revolio.Worker
