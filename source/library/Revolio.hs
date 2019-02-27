@@ -39,6 +39,10 @@ module Revolio
   , Revolio.Type.Url
   , Revolio.Type.textToUrl
   , Revolio.Type.urlToText
+  , Revolio.Type.Vault
+  , Revolio.Type.makeVault
+  , Revolio.Type.insertVault
+  , Revolio.Type.lookupVault
   , Revolio.Version.version
   , Revolio.Version.versionString
   )

@@ -4,7 +4,6 @@ module Revolio.Main
 where
 
 import qualified Control.Concurrent.Async as Async
-import qualified Control.Concurrent.STM as Stm
 import qualified Control.Monad as Monad
 import qualified Crypto.Hash as Crypto
 import qualified Crypto.MAC.HMAC as Crypto
@@ -41,12 +40,8 @@ defaultMain = do
   Tls.setGlobalManager manager
 
   queue <- Type.makeQueue
-  vault <- Stm.newTVarIO Map.empty
+  vault <- Type.makeVault
   Async.race_ (server config queue) (worker config queue vault)
-
-type Vault
-  = Stm.TVar
-    (Map.Map Type.SlackUserId (Type.PaychexLoginId, Type.PaychexPassword))
 
 server :: Type.Config -> Type.Queue -> IO ()
 server config queue =
@@ -140,7 +135,7 @@ ci = CaseInsensitive.mk
 formMime :: ByteString.ByteString
 formMime = toUtf8 "application/x-www-form-urlencoded"
 
-worker :: Type.Config -> Type.Queue -> Vault -> IO ()
+worker :: Type.Config -> Type.Queue -> Type.Vault -> IO ()
 worker config queue vault = Monad.forever $ do
   payload <- Type.dequeue queue
   case Type.payloadAction payload of
@@ -154,14 +149,12 @@ worker config queue vault = Monad.forever $ do
       ]
 
     Type.ActionSetup username password -> do
-      Stm.atomically . Stm.modifyTVar vault $ Map.insert
-        (Type.payloadUserId payload)
-        (username, password)
+      Type.insertVault vault (Type.payloadUserId payload) username password
       reply payload ["Successfully saved your credentials."]
 
     Type.ActionClock direction -> do
-      Just (username, password) <- Map.lookup (Type.payloadUserId payload)
-        <$> Stm.readTVarIO vault
+      Right (username, password) <- Type.lookupVault vault
+        $ Type.payloadUserId payload
       (cookie, token) <- logIn config username password
       punch cookie token direction
       reply payload ["Saved punch!"]

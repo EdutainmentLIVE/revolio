@@ -38,6 +38,10 @@ module Revolio.Type
   , Revolio.Type.Url.Url
   , Revolio.Type.Url.textToUrl
   , Revolio.Type.Url.urlToText
+  , Revolio.Type.Vault.Vault
+  , Revolio.Type.Vault.makeVault
+  , Revolio.Type.Vault.insertVault
+  , Revolio.Type.Vault.lookupVault
   )
 where
 
@@ -54,3 +58,4 @@ import qualified Revolio.Type.SlackMessage
 import qualified Revolio.Type.SlackSigningSecret
 import qualified Revolio.Type.SlackUserId
 import qualified Revolio.Type.Url
+import qualified Revolio.Type.Vault
