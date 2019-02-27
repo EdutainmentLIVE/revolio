@@ -74,6 +74,12 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
         (Http.toQueryValue . Revolio.textToPaychexClientId $ Text.pack "123")
           `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.pack "123")
 
+    Hspec.describe "PaychexLoginId" $ do
+
+      Hspec.it "can be used as a query value" $ do
+        (Http.toQueryValue . Revolio.textToPaychexLoginId $ Text.pack "you")
+          `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.pack "you")
+
     Hspec.describe "SlackSigningSecret" $ do
 
       Hspec.it "can be used as a byte array" $ do

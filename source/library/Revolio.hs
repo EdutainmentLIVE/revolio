@@ -7,6 +7,9 @@ module Revolio
   , Revolio.Type.PaychexClientId
   , Revolio.Type.textToPaychexClientId
   , Revolio.Type.paychexClientIdToText
+  , Revolio.Type.PaychexLoginId
+  , Revolio.Type.textToPaychexLoginId
+  , Revolio.Type.paychexLoginIdToText
   , Revolio.Type.SlackSigningSecret
   , Revolio.Type.textToSlackSigningSecret
   , Revolio.Type.slackSigningSecretToText

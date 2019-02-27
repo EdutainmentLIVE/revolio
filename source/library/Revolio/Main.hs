@@ -47,7 +47,7 @@ defaultMain = do
 
 type Queue = Stm.TBQueue Message
 
-type Vault = Stm.TVar (Map.Map UserId (Text.Text, Text.Text))
+type Vault = Stm.TVar (Map.Map UserId (Type.PaychexLoginId, Text.Text))
 
 server :: Type.Config -> Queue -> IO ()
 server config queue =
@@ -177,7 +177,7 @@ makeMessage payload action = Message
 
 data Action
   = Help
-  | Setup Text.Text Text.Text
+  | Setup Type.PaychexLoginId Text.Text
   | Punch Type.Direction
   deriving (Eq, Show)
 
@@ -186,8 +186,9 @@ parseAction text = case Text.unpack <$> Text.words text of
   ["help"] -> Just Help
   ["in"] -> Just $ Punch Type.DirectionIn
   ["out"] -> Just $ Punch Type.DirectionOut
-  ["setup", username, password] ->
-    Just $ Setup (Text.pack username) (Text.pack password)
+  ["setup", username, password] -> Just $ Setup
+    (Type.textToPaychexLoginId $ Text.pack username)
+    (Text.pack password)
   _ -> Nothing
 
 formMime :: ByteString.ByteString
@@ -299,7 +300,7 @@ reply message strings = do
 
 logIn
   :: Type.Config
-  -> Text.Text
+  -> Type.PaychexLoginId
   -> Text.Text
   -> IO (Client.Cookie, ByteString.ByteString)
 logIn config username password = do
@@ -316,7 +317,7 @@ logIn config username password = do
           , ( "txtCustomerAlias"
             , Type.paychexClientIdToText $ Type.configClient config
             )
-          , ("txtLoginID", username)
+          , ("txtLoginID", Type.paychexLoginIdToText username)
           , ("txtPassword", password)
           ]
       }
