@@ -15,7 +15,6 @@ import qualified Data.ByteString.Lazy as LazyByteString
 import qualified Data.CaseInsensitive as CaseInsensitive
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
-import qualified Data.String as String
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Encoding
 import qualified Network.HTTP.Client as Client
@@ -26,24 +25,18 @@ import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Middleware
 import qualified Revolio.Type as Type
-import qualified Revolio.Version as Version
-import qualified System.Console.GetOpt as Console
 import qualified System.Environment as Environment
 import qualified System.Exit as Exit
 import qualified System.IO as IO
-import qualified Text.Read as Read
 
 defaultMain :: IO ()
 defaultMain = do
   program <- Environment.getProgName
   arguments <- Environment.getArgs
-  let (warnings, result) = getConfig program arguments
+
+  let (warnings, result) = Type.getConfig program arguments
   IO.hPutStr IO.stderr warnings
-  config <- case result of
-    Left errors -> do
-      IO.hPutStr IO.stderr errors
-      Exit.exitFailure
-    Right config -> pure config
+  config <- either Exit.die pure result
 
   manager <- Tls.newTlsManager
   Tls.setGlobalManager manager
@@ -52,141 +45,24 @@ defaultMain = do
   vault <- Stm.newTVarIO Map.empty
   Async.race_ (server config queue) (worker config queue vault)
 
-data Config = Config
-  { configClient :: Type.PaychexClientId
-  , configHost :: Warp.HostPreference
-  , configPort :: Warp.Port
-  , configSecret :: Type.SlackSigningSecret
-  , configShowHelp :: Bool
-  , configShowVersion :: Bool
-  } deriving (Eq, Show)
-
-defaultConfig :: Config
-defaultConfig = Config
-  { configClient = Type.textToPaychexClientId $ Text.pack "0"
-  , configHost = String.fromString "127.0.0.1"
-  , configPort = 8080
-  , configSecret = Type.textToSlackSigningSecret
-    $ Text.pack "00000000000000000000000000000000"
-  , configShowHelp = False
-  , configShowVersion = False
-  }
-
-getConfig :: String -> [String] -> (String, Either String Config)
-getConfig program arguments =
-  let
-    (fs, as, os, es) = Console.getOpt' Console.Permute options arguments
-    warnings =
-      fmap (mappend "WARNING: unexpected argument " . quote) as
-        <> fmap (mappend "WARNING: unknown option " . quote) os
-    help = Console.usageInfo program options
-    version = Version.versionString <> "\n"
-    result = if null es
-      then case foldr (either Left) (Right defaultConfig) fs of
-        Left errors -> Left errors
-        Right config
-          | configShowHelp config -> Left help
-          | configShowVersion config -> Left version
-          | otherwise -> Right config
-      else Left $ concat es
-  in (unlines warnings, result)
-
-quote :: String -> String
-quote x = "`" <> x <> "'"
-
-type Option = Console.OptDescr (Config -> Either String Config)
-
-options :: [Option]
-options =
-  [ clientOption
-  , helpOption
-  , hostOption
-  , portOption
-  , secretOption
-  , versionOption
-  ]
-
-clientOption :: Option
-clientOption = Console.Option
-  ['c']
-  ["client"]
-  (Console.ReqArg
-    (\string config -> pure config
-      { configClient = Type.textToPaychexClientId $ Text.pack string
-      }
-    )
-    "CLIENT"
-  )
-  "set the Paychex client ID"
-
-helpOption :: Option
-helpOption = Console.Option
-  ['?']
-  ["help"]
-  (Console.NoArg (\config -> pure config { configShowHelp = True }))
-  "show the help"
-
-hostOption :: Option
-hostOption = Console.Option
-  ['h']
-  ["host"]
-  (Console.ReqArg
-    (\string config -> pure config { configHost = String.fromString string })
-    "HOST"
-  )
-  "set the host"
-
-portOption :: Option
-portOption = Console.Option
-  ['p']
-  ["port"]
-  (Console.ReqArg
-    (\string config -> do
-      port <- Read.readEither string
-      pure config { configPort = port }
-    )
-    "PORT"
-  )
-  "set the port"
-
-secretOption :: Option
-secretOption = Console.Option
-  ['s']
-  ["secret"]
-  (Console.ReqArg
-    (\string config -> pure config
-      { configSecret = Type.textToSlackSigningSecret $ Text.pack string
-      }
-    )
-    "SECRET"
-  )
-  "set the Slack signing secret"
-
-versionOption :: Option
-versionOption = Console.Option
-  ['v']
-  ["version"]
-  (Console.NoArg (\config -> pure config { configShowVersion = True }))
-  "show the version"
-
 type Queue = Stm.TBQueue Message
 
 type Vault = Stm.TVar (Map.Map UserId (Text.Text, Text.Text))
 
-server :: Config -> Queue -> IO ()
+server :: Type.Config -> Queue -> IO ()
 server config queue =
   Warp.runSettings (settings config) . middleware $ application config queue
 
-settings :: Config -> Warp.Settings
+settings :: Type.Config -> Warp.Settings
 settings config =
-  Warp.setHost (configHost config)
-    . Warp.setPort (configPort config)
+  Warp.setHost (Type.configHost config)
+    . Warp.setPort (Type.configPort config)
     $ Warp.setServerName mempty Warp.defaultSettings
 
 middleware :: Wai.Middleware
 middleware = Middleware.logStdout
 
-application :: Config -> Queue -> Wai.Application
+application :: Type.Config -> Queue -> Wai.Application
 application config queue request respond =
   let
     path = Text.unpack <$> Wai.pathInfo request
@@ -197,7 +73,7 @@ application config queue request respond =
       _ -> respond $ Wai.responseBuilder Http.methodNotAllowed405 [] mempty
     _ -> respond $ Wai.responseBuilder Http.notFound404 [] mempty
 
-handle :: Config -> Queue -> Wai.Application
+handle :: Type.Config -> Queue -> Wai.Application
 handle config queue request respond = do
   body <- LazyByteString.toStrict <$> Wai.lazyRequestBody request
   case authorize config request body of
@@ -252,7 +128,8 @@ jsonResponse status headers json = Wai.responseLBS
   ((Http.hContentType, jsonMime) : headers)
   (Aeson.encode json)
 
-authorize :: Config -> Wai.Request -> ByteString.ByteString -> Either String ()
+authorize
+  :: Type.Config -> Wai.Request -> ByteString.ByteString -> Either String ()
 authorize config request body = do
   let
     headers = Map.fromList $ Wai.requestHeaders request
@@ -275,7 +152,8 @@ authorize config request body = do
     expected = Crypto.HMAC digest :: Crypto.HMAC Crypto.SHA256
     message = toUtf8 "v0:" <> timestamp <> toUtf8 ":" <> body
     actual =
-      Crypto.hmac (configSecret config) message :: Crypto.HMAC Crypto.SHA256
+      Crypto.hmac (Type.configSecret config) message :: Crypto.HMAC
+          Crypto.SHA256
   if actual == expected then Right () else Left "not authorized"
 
 toUtf8 :: String -> ByteString.ByteString
@@ -362,7 +240,7 @@ newtype UserId = UserId
   { userIdToText :: Text.Text
   } deriving (Eq, Ord, Show)
 
-worker :: Config -> Queue -> Vault -> IO ()
+worker :: Type.Config -> Queue -> Vault -> IO ()
 worker config queue vault = Monad.forever $ do
   message <- Stm.atomically $ Stm.readTBQueue queue
   case messageAction message of
@@ -422,7 +300,7 @@ reply message strings = do
     manager
 
 logIn
-  :: Config
+  :: Type.Config
   -> Text.Text
   -> Text.Text
   -> IO (Client.Cookie, ByteString.ByteString)
@@ -438,7 +316,7 @@ logIn config username password = do
           [ ("__VIEWSTATE", Text.empty)
           , ("btnLogin", Text.pack "Login")
           , ( "txtCustomerAlias"
-            , Type.paychexClientIdToText $ configClient config
+            , Type.paychexClientIdToText $ Type.configClient config
             )
           , ("txtLoginID", username)
           , ("txtPassword", password)

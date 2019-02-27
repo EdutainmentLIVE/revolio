@@ -54,6 +54,7 @@ library
     Paths_revolio
     Revolio.Main
     Revolio.Type
+    Revolio.Type.Config
     Revolio.Type.PaychexClientId
     Revolio.Type.SlackSigningSecret
     Revolio.Version

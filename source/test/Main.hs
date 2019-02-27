@@ -7,6 +7,7 @@ where
 
 import qualified Data.ByteArray as Memory
 import qualified Data.List as List
+import qualified Data.String as String
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Encoding
 import qualified Data.Version as Version
@@ -18,6 +19,46 @@ main :: IO ()
 main = Hspec.hspec . Hspec.describe "Revolio" $ do
 
   Hspec.describe "Type" $ do
+
+    Hspec.describe "Config" $ do
+
+      Hspec.it "returns the default config" $ do
+        Revolio.getConfig "" []
+          `Hspec.shouldBe` ("", Right Revolio.defaultConfig)
+
+      Hspec.it "warns about unexpected arguments" $ do
+        Revolio.getConfig "" ["it"] `Hspec.shouldNotSatisfy` (null . fst)
+
+      Hspec.it "warns about unknown options" $ do
+        Revolio.getConfig "" ["--it"] `Hspec.shouldNotSatisfy` (null . fst)
+
+      Hspec.it "returns the help" $ do
+        help <- either pure (fail . show) . snd $ Revolio.getConfig "" ["-?"]
+        help `Hspec.shouldNotSatisfy` null
+
+      Hspec.it "returns the version" $ do
+        version <- either pure (fail . show) . snd $ Revolio.getConfig
+          ""
+          ["-v"]
+        version `Hspec.shouldNotSatisfy` null
+
+      Hspec.it "sets the Paychex client ID" $ do
+        config <- either fail pure . snd $ Revolio.getConfig "" ["-c", "it"]
+        Revolio.configClient config
+          `Hspec.shouldBe` Revolio.textToPaychexClientId (Text.pack "it")
+
+      Hspec.it "sets the host" $ do
+        config <- either fail pure . snd $ Revolio.getConfig "" ["-h", "*"]
+        Revolio.configHost config `Hspec.shouldBe` String.fromString "*"
+
+      Hspec.it "sets the port" $ do
+        config <- either fail pure . snd $ Revolio.getConfig "" ["-p", "80"]
+        Revolio.configPort config `Hspec.shouldBe` 80
+
+      Hspec.it "sets the Slack signing secret" $ do
+        config <- either fail pure . snd $ Revolio.getConfig "" ["-s", "it"]
+        Revolio.configSecret config
+          `Hspec.shouldBe` Revolio.textToSlackSigningSecret (Text.pack "it")
 
     Hspec.describe "PaychexClientId" $ do
 
