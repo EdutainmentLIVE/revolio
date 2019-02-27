@@ -22,6 +22,10 @@ module Revolio.Type
   , Revolio.Type.PaychexPassword.paychexPasswordToText
   , Revolio.Type.Payload.Payload(..)
   , Revolio.Type.Payload.queryToPayload
+  , Revolio.Type.Queue.Queue
+  , Revolio.Type.Queue.makeQueue
+  , Revolio.Type.Queue.enqueue
+  , Revolio.Type.Queue.dequeue
   , Revolio.Type.SlackMessage.SlackMessage
   , Revolio.Type.SlackMessage.textToSlackMessage
   , Revolio.Type.SlackMessage.slackMessageToText
@@ -45,6 +49,7 @@ import qualified Revolio.Type.PaychexClientId
 import qualified Revolio.Type.PaychexLoginId
 import qualified Revolio.Type.PaychexPassword
 import qualified Revolio.Type.Payload
+import qualified Revolio.Type.Queue
 import qualified Revolio.Type.SlackMessage
 import qualified Revolio.Type.SlackSigningSecret
 import qualified Revolio.Type.SlackUserId

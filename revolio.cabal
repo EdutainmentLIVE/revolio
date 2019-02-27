@@ -62,6 +62,7 @@ library
     Revolio.Type.PaychexLoginId
     Revolio.Type.PaychexPassword
     Revolio.Type.Payload
+    Revolio.Type.Queue
     Revolio.Type.SlackMessage
     Revolio.Type.SlackSigningSecret
     Revolio.Type.SlackUserId

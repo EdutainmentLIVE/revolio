@@ -23,6 +23,10 @@ module Revolio
   , Revolio.Type.paychexPasswordToText
   , Revolio.Type.Payload(..)
   , Revolio.Type.queryToPayload
+  , Revolio.Type.Queue
+  , Revolio.Type.makeQueue
+  , Revolio.Type.enqueue
+  , Revolio.Type.dequeue
   , Revolio.Type.SlackMessage
   , Revolio.Type.textToSlackMessage
   , Revolio.Type.slackMessageToText

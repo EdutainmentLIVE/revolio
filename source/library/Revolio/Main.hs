@@ -40,17 +40,15 @@ defaultMain = do
   manager <- Tls.newTlsManager
   Tls.setGlobalManager manager
 
-  queue <- Stm.newTBQueueIO 64
+  queue <- Type.makeQueue
   vault <- Stm.newTVarIO Map.empty
   Async.race_ (server config queue) (worker config queue vault)
-
-type Queue = Stm.TBQueue Type.Payload
 
 type Vault
   = Stm.TVar
     (Map.Map Type.SlackUserId (Type.PaychexLoginId, Type.PaychexPassword))
 
-server :: Type.Config -> Queue -> IO ()
+server :: Type.Config -> Type.Queue -> IO ()
 server config queue =
   Warp.runSettings (settings config) . middleware $ application config queue
 
@@ -63,7 +61,7 @@ settings config =
 middleware :: Wai.Middleware
 middleware = Middleware.logStdout
 
-application :: Type.Config -> Queue -> Wai.Application
+application :: Type.Config -> Type.Queue -> Wai.Application
 application config queue request respond =
   let
     path = Text.unpack <$> Wai.pathInfo request
@@ -74,7 +72,7 @@ application config queue request respond =
       _ -> respond $ Wai.responseBuilder Http.methodNotAllowed405 [] mempty
     _ -> respond $ Wai.responseBuilder Http.notFound404 [] mempty
 
-handle :: Type.Config -> Queue -> Wai.Application
+handle :: Type.Config -> Type.Queue -> Wai.Application
 handle config queue request respond = do
   body <- LazyByteString.toStrict <$> Wai.lazyRequestBody request
   case authorize config request body of
@@ -90,7 +88,7 @@ handle config queue request respond = do
           . LazyByteString.fromStrict
           $ toUtf8 problem
       Right payload -> do
-        Stm.atomically $ Stm.writeTBQueue queue payload
+        Type.enqueue queue payload
         respond . jsonResponse Http.ok200 [] $ stringToSlackMessage
           "Working on it!"
 
@@ -142,9 +140,9 @@ ci = CaseInsensitive.mk
 formMime :: ByteString.ByteString
 formMime = toUtf8 "application/x-www-form-urlencoded"
 
-worker :: Type.Config -> Queue -> Vault -> IO ()
+worker :: Type.Config -> Type.Queue -> Vault -> IO ()
 worker config queue vault = Monad.forever $ do
-  payload <- Stm.atomically $ Stm.readTBQueue queue
+  payload <- Type.dequeue queue
   case Type.payloadAction payload of
     Type.ActionHelp -> reply
       payload
