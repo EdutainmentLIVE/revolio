@@ -83,16 +83,30 @@ handle config queue request respond = do
         . Wai.responseLBS Http.forbidden403 []
         . LazyByteString.fromStrict
         $ toUtf8 problem
-    Right () -> case parsePayload $ Http.parseSimpleQuery body of
+    Right () -> case parseQuery body of
       Left problem ->
         respond
           . Wai.responseLBS Http.badRequest400 []
           . LazyByteString.fromStrict
           $ toUtf8 problem
-      Right payload -> do
-        Stm.atomically $ Stm.writeTBQueue queue payload
-        respond . jsonResponse Http.ok200 [] $ stringToSlackMessage
-          "Working on it!"
+      Right query -> case parsePayload query of
+        Left problem ->
+          respond
+            . Wai.responseLBS Http.badRequest400 []
+            . LazyByteString.fromStrict
+            $ toUtf8 problem
+        Right payload -> do
+          Stm.atomically $ Stm.writeTBQueue queue payload
+          respond . jsonResponse Http.ok200 [] $ stringToSlackMessage
+            "Working on it!"
+
+parseQuery
+  :: ByteString.ByteString -> Either String (Map.Map Text.Text Text.Text)
+parseQuery =
+  fmap Map.fromList . traverse parseQueryItem . Http.parseSimpleQuery
+
+parseQueryItem :: Http.SimpleQueryItem -> Either String (Text.Text, Text.Text)
+parseQueryItem (k, v) = (,) <$> parseText k <*> parseText v
 
 jsonResponse
   :: Aeson.ToJSON body
@@ -149,30 +163,13 @@ data Payload = Payload
   , payloadUserId :: Type.SlackUserId
   } deriving (Eq, Show)
 
-parsePayload :: Http.SimpleQuery -> Either String Payload
+parsePayload :: Map.Map Text.Text Text.Text -> Either String Payload
 parsePayload query =
-  let q = Map.fromList query
-  in
-    Payload
-    <$> require q "text" parseAction
-    <*> require q "command" parseCommand
-    <*> require q "response_url" parseUri
-    <*> require q "user_id" (fmap Type.textToSlackUserId . parseText)
-
-parseAction :: ByteString.ByteString -> Either String Type.Action
-parseAction byteString = do
-  text <- parseText byteString
-  Type.textToAction text
-
-parseCommand :: ByteString.ByteString -> Either String Type.Command
-parseCommand byteString = do
-  text <- parseText byteString
-  Type.textToCommand text
-
-parseUri :: ByteString.ByteString -> Either String Type.Url
-parseUri byteString = do
-  text <- parseText byteString
-  Type.textToUrl text
+  Payload
+    <$> require query "text" Type.textToAction
+    <*> require query "command" Type.textToCommand
+    <*> require query "response_url" Type.textToUrl
+    <*> require query "user_id" (pure . Type.textToSlackUserId)
 
 parseText :: ByteString.ByteString -> Either String Text.Text
 parseText byteString = case Encoding.decodeUtf8' byteString of
@@ -181,16 +178,13 @@ parseText byteString = case Encoding.decodeUtf8' byteString of
   Right text -> Right text
 
 require
-  :: Map.Map ByteString.ByteString ByteString.ByteString
+  :: Map.Map Text.Text Text.Text
   -> String
-  -> (ByteString.ByteString -> Either String a)
+  -> (Text.Text -> Either String a)
   -> Either String a
-require query name convert =
-  let key = toUtf8 name
-  in
-    case Map.lookup key query of
-      Nothing -> Left $ "missing name: " <> show key
-      Just value -> convert value
+require query key convert = case Map.lookup (Text.pack key) query of
+  Nothing -> Left $ "missing required key: " <> show key
+  Just value -> convert value
 
 worker :: Type.Config -> Queue -> Vault -> IO ()
 worker config queue vault = Monad.forever $ do
