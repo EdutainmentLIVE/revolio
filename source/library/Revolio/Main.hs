@@ -44,7 +44,7 @@ defaultMain = do
   vault <- Stm.newTVarIO Map.empty
   Async.race_ (server config queue) (worker config queue vault)
 
-type Queue = Stm.TBQueue Payload
+type Queue = Stm.TBQueue Type.Payload
 
 type Vault
   = Stm.TVar
@@ -83,30 +83,16 @@ handle config queue request respond = do
         . Wai.responseLBS Http.forbidden403 []
         . LazyByteString.fromStrict
         $ toUtf8 problem
-    Right () -> case parseQuery body of
+    Right () -> case Type.queryToPayload body of
       Left problem ->
         respond
           . Wai.responseLBS Http.badRequest400 []
           . LazyByteString.fromStrict
           $ toUtf8 problem
-      Right query -> case parsePayload query of
-        Left problem ->
-          respond
-            . Wai.responseLBS Http.badRequest400 []
-            . LazyByteString.fromStrict
-            $ toUtf8 problem
-        Right payload -> do
-          Stm.atomically $ Stm.writeTBQueue queue payload
-          respond . jsonResponse Http.ok200 [] $ stringToSlackMessage
-            "Working on it!"
-
-parseQuery
-  :: ByteString.ByteString -> Either String (Map.Map Text.Text Text.Text)
-parseQuery =
-  fmap Map.fromList . traverse parseQueryItem . Http.parseSimpleQuery
-
-parseQueryItem :: Http.SimpleQueryItem -> Either String (Text.Text, Text.Text)
-parseQueryItem (k, v) = (,) <$> parseText k <*> parseText v
+      Right payload -> do
+        Stm.atomically $ Stm.writeTBQueue queue payload
+        respond . jsonResponse Http.ok200 [] $ stringToSlackMessage
+          "Working on it!"
 
 jsonResponse
   :: Aeson.ToJSON body
@@ -156,40 +142,10 @@ ci = CaseInsensitive.mk
 formMime :: ByteString.ByteString
 formMime = toUtf8 "application/x-www-form-urlencoded"
 
-data Payload = Payload
-  { payloadAction :: Type.Action
-  , payloadCommand :: Type.Command
-  , payloadResponseUrl :: Type.Url
-  , payloadUserId :: Type.SlackUserId
-  } deriving (Eq, Show)
-
-parsePayload :: Map.Map Text.Text Text.Text -> Either String Payload
-parsePayload query =
-  Payload
-    <$> require query "text" Type.textToAction
-    <*> require query "command" Type.textToCommand
-    <*> require query "response_url" Type.textToUrl
-    <*> require query "user_id" (pure . Type.textToSlackUserId)
-
-parseText :: ByteString.ByteString -> Either String Text.Text
-parseText byteString = case Encoding.decodeUtf8' byteString of
-  Left problem ->
-    Left $ "invalid UTF-8 (" <> show problem <> "): " <> show byteString
-  Right text -> Right text
-
-require
-  :: Map.Map Text.Text Text.Text
-  -> String
-  -> (Text.Text -> Either String a)
-  -> Either String a
-require query key convert = case Map.lookup (Text.pack key) query of
-  Nothing -> Left $ "missing required key: " <> show key
-  Just value -> convert value
-
 worker :: Type.Config -> Queue -> Vault -> IO ()
 worker config queue vault = Monad.forever $ do
   payload <- Stm.atomically $ Stm.readTBQueue queue
-  case payloadAction payload of
+  case Type.payloadAction payload of
     Type.ActionHelp -> reply
       payload
       [ "Usage:"
@@ -201,12 +157,12 @@ worker config queue vault = Monad.forever $ do
 
     Type.ActionSetup username password -> do
       Stm.atomically . Stm.modifyTVar vault $ Map.insert
-        (payloadUserId payload)
+        (Type.payloadUserId payload)
         (username, password)
       reply payload ["Successfully saved your credentials."]
 
     Type.ActionClock direction -> do
-      Just (username, password) <- Map.lookup (payloadUserId payload)
+      Just (username, password) <- Map.lookup (Type.payloadUserId payload)
         <$> Stm.readTVarIO vault
       (cookie, token) <- logIn config username password
       punch cookie token direction
@@ -221,10 +177,10 @@ stringToSlackMessage = Type.textToSlackMessage . Text.pack
 jsonMime :: ByteString.ByteString
 jsonMime = toUtf8 "application/json"
 
-reply :: Payload -> [String] -> IO ()
+reply :: Type.Payload -> [String] -> IO ()
 reply payload strings = do
   manager <- Tls.getGlobalManager
-  request <- Client.parseUrlThrow . renderUri $ payloadResponseUrl payload
+  request <- Client.parseUrlThrow . renderUri $ Type.payloadResponseUrl payload
   Monad.void $ Client.httpLbs
     request
       { Client.method = Http.methodPost

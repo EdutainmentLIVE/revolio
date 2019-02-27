@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {- HLINT ignore "Redundant do" -}
 
 module Main
@@ -14,6 +15,7 @@ import qualified Data.String as String
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Encoding
 import qualified Data.Version as Version
+import qualified Network.HTTP.Types as Http
 import qualified Network.HTTP.Types.QueryLike as Http
 import qualified Revolio
 import qualified Test.Hspec as Hspec
@@ -171,6 +173,37 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
         (Http.toQueryValue . Revolio.textToPaychexPassword $ Text.pack "axe")
           `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.pack "axe")
 
+    Hspec.describe "Payload" $ do
+
+      Hspec.describe "queryToPayload" $ do
+
+        let
+          parse :: [(String, String)] -> Either String Revolio.Payload
+          parse =
+            Revolio.queryToPayload . Http.renderQuery False . Http.toQuery
+
+        Hspec.it "parses a valid payload" $ do
+          let
+            payload = Revolio.Payload
+              { Revolio.payloadAction = Revolio.ActionHelp
+              , Revolio.payloadCommand = Revolio.CommandClock
+              , Revolio.payloadResponseUrl =
+                either undefined id . Revolio.textToUrl $ Text.pack
+                  "http://slack.test"
+              , Revolio.payloadUserId = Revolio.textToSlackUserId
+                $ Text.pack "U1"
+              }
+          parse
+              [ ("user_id", "U1")
+              , ("command", "/clock")
+              , ("text", "help")
+              , ("response_url", "http://slack.test")
+              ]
+            `Hspec.shouldBe` Right payload
+
+        Hspec.it "rejects a payload without required information" $ do
+          parse [] `Hspec.shouldSatisfy` Either.isLeft
+
     Hspec.describe "SlackMessage" $ do
 
       Hspec.it "can be converted into JSON" $ do
@@ -196,13 +229,13 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
             `Hspec.shouldSatisfy` Either.isLeft
 
         Hspec.it "success with a valid URL" $ do
-          Revolio.textToUrl (Text.pack "https://revolio.invalid")
+          Revolio.textToUrl (Text.pack "http://revolio.test")
             `Hspec.shouldSatisfy` Either.isRight
 
       Hspec.describe "urlToText" $ do
 
         Hspec.it "renders a URL as text" $ do
-          let text = Text.pack "https://revolio.invalid"
+          let text = Text.pack "http://revolio.test"
           url <- either fail pure $ Revolio.textToUrl text
           Revolio.urlToText url `Hspec.shouldBe` text
 

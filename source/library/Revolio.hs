@@ -21,6 +21,8 @@ module Revolio
   , Revolio.Type.PaychexPassword
   , Revolio.Type.textToPaychexPassword
   , Revolio.Type.paychexPasswordToText
+  , Revolio.Type.Payload(..)
+  , Revolio.Type.queryToPayload
   , Revolio.Type.SlackMessage
   , Revolio.Type.textToSlackMessage
   , Revolio.Type.slackMessageToText
