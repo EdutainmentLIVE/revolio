@@ -19,6 +19,9 @@ module Revolio
   , Revolio.Type.SlackUserId
   , Revolio.Type.textToSlackUserId
   , Revolio.Type.slackUserIdToText
+  , Revolio.Type.Url
+  , Revolio.Type.textToUrl
+  , Revolio.Type.urlToText
   , Revolio.Version.version
   , Revolio.Version.versionString
   )

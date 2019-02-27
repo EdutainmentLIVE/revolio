@@ -6,6 +6,7 @@ module Main
 where
 
 import qualified Data.ByteArray as Memory
+import qualified Data.Either as Either
 import qualified Data.List as List
 import qualified Data.String as String
 import qualified Data.Text as Text
@@ -91,6 +92,25 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
       Hspec.it "can be used as a byte array" $ do
         (Memory.length . Revolio.textToSlackSigningSecret $ Text.pack "123")
           `Hspec.shouldBe` 3
+
+    Hspec.describe "Url" $ do
+
+      Hspec.describe "textToUrl" $ do
+
+        Hspec.it "fails with an invalid URL" $ do
+          Revolio.textToUrl (Text.pack "invalid URL")
+            `Hspec.shouldSatisfy` Either.isLeft
+
+        Hspec.it "success with a valid URL" $ do
+          Revolio.textToUrl (Text.pack "https://revolio.invalid")
+            `Hspec.shouldSatisfy` Either.isRight
+
+      Hspec.describe "urlToText" $ do
+
+        Hspec.it "renders a URL as text" $ do
+          let text = Text.pack "https://revolio.invalid"
+          url <- either fail pure $ Revolio.textToUrl text
+          Revolio.urlToText url `Hspec.shouldBe` text
 
   Hspec.describe "Version" $ do
 

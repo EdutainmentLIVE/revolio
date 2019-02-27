@@ -61,6 +61,7 @@ library
     Revolio.Type.PaychexPassword
     Revolio.Type.SlackSigningSecret
     Revolio.Type.SlackUserId
+    Revolio.Type.Url
     Revolio.Version
 
 executable revolio

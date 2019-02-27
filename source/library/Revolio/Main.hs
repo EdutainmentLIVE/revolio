@@ -20,7 +20,6 @@ import qualified Data.Text.Encoding as Encoding
 import qualified Network.HTTP.Client as Client
 import qualified Network.HTTP.Client.TLS as Tls
 import qualified Network.HTTP.Types as Http
-import qualified Network.URI as Uri
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Middleware
@@ -166,7 +165,7 @@ ci = CaseInsensitive.mk
 
 data Message = Message
   { messageAction :: Action
-  , messageResponseUrl :: Uri.URI
+  , messageResponseUrl :: Type.Url
   , messageUserId :: Type.SlackUserId
   } deriving (Eq, Show)
 
@@ -198,7 +197,7 @@ formMime = toUtf8 "application/x-www-form-urlencoded"
 
 data Payload = Payload
   { payloadCommand :: Text.Text
-  , payloadResponseUrl :: Uri.URI
+  , payloadResponseUrl :: Type.Url
   , payloadText :: Text.Text
   , payloadUserId :: Type.SlackUserId
   } deriving (Eq, Show)
@@ -213,12 +212,10 @@ parsePayload query =
     <*> require q "text" parseText
     <*> require q "user_id" (fmap Type.textToSlackUserId . parseText)
 
-parseUri :: ByteString.ByteString -> Either String Uri.URI
+parseUri :: ByteString.ByteString -> Either String Type.Url
 parseUri byteString = do
   text <- parseText byteString
-  case Uri.parseAbsoluteURI $ Text.unpack text of
-    Nothing -> Left $ "invalid URI: " <> show text
-    Just uri -> Right uri
+  Type.textToUrl text
 
 parseText :: ByteString.ByteString -> Either String Text.Text
 parseText byteString = case Encoding.decodeUtf8' byteString of
@@ -263,8 +260,8 @@ worker config queue vault = Monad.forever $ do
       punch cookie token direction
       reply message ["Saved punch!"]
 
-renderUri :: Uri.URI -> String
-renderUri uri = Uri.uriToString id uri ""
+renderUri :: Type.Url -> String
+renderUri = Text.unpack . Type.urlToText
 
 newtype SlackMessage = SlackMessage
   { slackMessageToText :: Text.Text

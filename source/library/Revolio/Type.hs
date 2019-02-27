@@ -18,6 +18,9 @@ module Revolio.Type
   , Revolio.Type.SlackUserId.SlackUserId
   , Revolio.Type.SlackUserId.textToSlackUserId
   , Revolio.Type.SlackUserId.slackUserIdToText
+  , Revolio.Type.Url.Url
+  , Revolio.Type.Url.textToUrl
+  , Revolio.Type.Url.urlToText
   )
 where
 
@@ -28,3 +31,4 @@ import qualified Revolio.Type.PaychexLoginId
 import qualified Revolio.Type.PaychexPassword
 import qualified Revolio.Type.SlackSigningSecret
 import qualified Revolio.Type.SlackUserId
+import qualified Revolio.Type.Url
