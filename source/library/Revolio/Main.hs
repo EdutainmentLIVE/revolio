@@ -56,7 +56,7 @@ data Config = Config
   { configClient :: Type.PaychexClientId
   , configHost :: Warp.HostPreference
   , configPort :: Warp.Port
-  , configSecret :: ByteString.ByteString
+  , configSecret :: Type.SlackSigningSecret
   , configShowHelp :: Bool
   , configShowVersion :: Bool
   } deriving (Eq, Show)
@@ -66,7 +66,8 @@ defaultConfig = Config
   { configClient = Type.textToPaychexClientId $ Text.pack "0"
   , configHost = String.fromString "127.0.0.1"
   , configPort = 8080
-  , configSecret = toUtf8 "00000000000000000000000000000000"
+  , configSecret = Type.textToSlackSigningSecret
+    $ Text.pack "00000000000000000000000000000000"
   , configShowHelp = False
   , configShowVersion = False
   }
@@ -110,8 +111,9 @@ clientOption = Console.Option
   ['c']
   ["client"]
   (Console.ReqArg
-    (\string config ->
-      pure config { configClient = Type.textToPaychexClientId $ Text.pack string }
+    (\string config -> pure config
+      { configClient = Type.textToPaychexClientId $ Text.pack string
+      }
     )
     "CLIENT"
   )
@@ -152,7 +154,10 @@ secretOption = Console.Option
   ['s']
   ["secret"]
   (Console.ReqArg
-    (\string config -> pure config { configSecret = toUtf8 string })
+    (\string config -> pure config
+      { configSecret = Type.textToSlackSigningSecret $ Text.pack string
+      }
+    )
     "SECRET"
   )
   "set the Slack signing secret"
@@ -432,7 +437,9 @@ logIn config username password = do
         Client.RequestBodyBS . Http.renderQuery False $ Http.toQuery
           [ ("__VIEWSTATE", Text.empty)
           , ("btnLogin", Text.pack "Login")
-          , ("txtCustomerAlias", Type.paychexClientIdToText $ configClient config)
+          , ( "txtCustomerAlias"
+            , Type.paychexClientIdToText $ configClient config
+            )
           , ("txtLoginID", username)
           , ("txtPassword", password)
           ]

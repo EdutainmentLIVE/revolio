@@ -5,6 +5,7 @@ module Main
   )
 where
 
+import qualified Data.ByteArray as Memory
 import qualified Data.List as List
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Encoding
@@ -23,6 +24,12 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
       Hspec.it "can be converted into a query value" $ do
         (Http.toQueryValue . Revolio.textToPaychexClientId $ Text.pack "123")
           `Hspec.shouldBe` (Just . Encoding.encodeUtf8 $ Text.pack "123")
+
+    Hspec.describe "SlackSigningSecret" $ do
+
+      Hspec.it "can be used as a byte array" $ do
+        (Memory.length . Revolio.textToSlackSigningSecret $ Text.pack "123")
+          `Hspec.shouldBe` 3
 
   Hspec.describe "Version" $ do
 
