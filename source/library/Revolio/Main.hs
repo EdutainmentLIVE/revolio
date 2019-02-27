@@ -90,31 +90,20 @@ handle config queue request respond = do
           . LazyByteString.fromStrict
           $ toUtf8 problem
       Right payload ->
-        let command = Text.unpack $ payloadCommand payload
+        let text = payloadText payload
         in
-          if command /= "/clock"
-            then
+          case Type.textToAction text of
+            Left problem ->
               respond
-              . Wai.responseLBS Http.badRequest400 []
-              . LazyByteString.fromStrict
-              . toUtf8
-              $ "unknown command: "
-              <> show command
-            else
-              let text = payloadText payload
-              in
-                case Type.textToAction text of
-                  Left problem ->
-                    respond
-                      . Wai.responseLBS Http.badRequest400 []
-                      . LazyByteString.fromStrict
-                      $ toUtf8 problem
-                  Right action -> do
-                    Stm.atomically . Stm.writeTBQueue queue $ makeMessage
-                      payload
-                      action
-                    respond . jsonResponse Http.ok200 [] $ stringToSlackMessage
-                      "Working on it!"
+                . Wai.responseLBS Http.badRequest400 []
+                . LazyByteString.fromStrict
+                $ toUtf8 problem
+            Right action -> do
+              Stm.atomically . Stm.writeTBQueue queue $ makeMessage
+                payload
+                action
+              respond . jsonResponse Http.ok200 [] $ stringToSlackMessage
+                "Working on it!"
 
 jsonResponse
   :: Aeson.ToJSON body
@@ -178,7 +167,7 @@ formMime :: ByteString.ByteString
 formMime = toUtf8 "application/x-www-form-urlencoded"
 
 data Payload = Payload
-  { payloadCommand :: Text.Text
+  { payloadCommand :: Type.Command
   , payloadResponseUrl :: Type.Url
   , payloadText :: Text.Text
   , payloadUserId :: Type.SlackUserId
@@ -189,10 +178,15 @@ parsePayload query =
   let q = Map.fromList query
   in
     Payload
-    <$> require q "command" parseText
+    <$> require q "command" parseCommand
     <*> require q "response_url" parseUri
     <*> require q "text" parseText
     <*> require q "user_id" (fmap Type.textToSlackUserId . parseText)
+
+parseCommand :: ByteString.ByteString -> Either String Type.Command
+parseCommand byteString = do
+  text <- parseText byteString
+  Type.textToCommand text
 
 parseUri :: ByteString.ByteString -> Either String Type.Url
 parseUri byteString = do

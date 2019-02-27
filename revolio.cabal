@@ -55,6 +55,7 @@ library
     Revolio.Main
     Revolio.Type
     Revolio.Type.Action
+    Revolio.Type.Command
     Revolio.Type.Config
     Revolio.Type.Direction
     Revolio.Type.PaychexClientId

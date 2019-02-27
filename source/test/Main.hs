@@ -67,6 +67,24 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
               )
             `Hspec.shouldBe` Text.pack "setup u p"
 
+    Hspec.describe "Command" $ do
+
+      Hspec.describe "textToCommand" $ do
+
+        Hspec.it "parses a clock command" $ do
+          Revolio.textToCommand (Text.pack "/clock")
+            `Hspec.shouldBe` Right Revolio.CommandClock
+
+        Hspec.it "rejects an invalid command" $ do
+          Revolio.textToCommand (Text.pack "invalid command")
+            `Hspec.shouldSatisfy` Either.isLeft
+
+      Hspec.describe "commandToText" $ do
+
+        Hspec.it "converts a command into text" $ do
+          Revolio.commandToText Revolio.CommandClock
+            `Hspec.shouldBe` Text.pack "/clock"
+
     Hspec.describe "Config" $ do
 
       Hspec.it "returns the default config" $ do

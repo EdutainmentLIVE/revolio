@@ -2,6 +2,9 @@ module Revolio.Type
   ( Revolio.Type.Action.Action(..)
   , Revolio.Type.Action.textToAction
   , Revolio.Type.Action.actionToText
+  , Revolio.Type.Command.Command(..)
+  , Revolio.Type.Command.textToCommand
+  , Revolio.Type.Command.commandToText
   , Revolio.Type.Config.Config(..)
   , Revolio.Type.Config.defaultConfig
   , Revolio.Type.Config.getConfig
@@ -33,6 +36,7 @@ module Revolio.Type
 where
 
 import qualified Revolio.Type.Action
+import qualified Revolio.Type.Command
 import qualified Revolio.Type.Config
 import qualified Revolio.Type.Direction
 import qualified Revolio.Type.PaychexClientId

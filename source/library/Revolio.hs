@@ -3,6 +3,9 @@ module Revolio
   , Revolio.Type.Action(..)
   , Revolio.Type.textToAction
   , Revolio.Type.actionToText
+  , Revolio.Type.Command(..)
+  , Revolio.Type.textToCommand
+  , Revolio.Type.commandToText
   , Revolio.Type.Config(..)
   , Revolio.Type.defaultConfig
   , Revolio.Type.getConfig
