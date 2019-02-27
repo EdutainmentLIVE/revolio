@@ -2,11 +2,13 @@ module Revolio
   ( Revolio.Main.defaultMain
   , Revolio.Type.Action(..)
   , Revolio.Type.textToAction
+  , Revolio.Type.actionToText
   , Revolio.Type.Config(..)
   , Revolio.Type.defaultConfig
   , Revolio.Type.getConfig
   , Revolio.Type.Direction(..)
   , Revolio.Type.textToDirection
+  , Revolio.Type.directionToText
   , Revolio.Type.PaychexClientId
   , Revolio.Type.textToPaychexClientId
   , Revolio.Type.paychexClientIdToText

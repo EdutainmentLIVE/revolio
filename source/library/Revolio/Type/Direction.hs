@@ -1,6 +1,7 @@
 module Revolio.Type.Direction
   ( Direction(..)
   , textToDirection
+  , directionToText
   )
 where
 
@@ -22,3 +23,8 @@ textToDirection text = case Text.unpack text of
   "in" -> Right DirectionIn
   "out" -> Right DirectionOut
   _ -> Left $ "unknown direction: " <> show text
+
+directionToText :: Direction -> Text.Text
+directionToText direction = Text.pack $ case direction of
+  DirectionIn -> "in"
+  DirectionOut -> "out"

@@ -1,6 +1,7 @@
 module Revolio.Type.Action
   ( Action(..)
   , textToAction
+  , actionToText
   )
 where
 
@@ -24,3 +25,15 @@ textToAction text = case Text.unpack <$> Text.words text of
     (Type.textToPaychexLoginId $ Text.pack username)
     (Type.textToPaychexPassword $ Text.pack password)
   _ -> Left $ "unknown action: " <> show text
+
+actionToText :: Action -> Text.Text
+actionToText action = case action of
+  ActionClock direction -> Text.pack $ case direction of
+    Type.DirectionIn -> "in"
+    Type.DirectionOut -> "out"
+  ActionHelp -> Text.pack "help"
+  ActionSetup username password -> Text.unwords
+    [ Text.pack "setup"
+    , Type.paychexLoginIdToText username
+    , Type.paychexPasswordToText password
+    ]

@@ -49,6 +49,22 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
           Revolio.textToAction (Text.pack "invalid action")
             `Hspec.shouldSatisfy` Either.isLeft
 
+      Hspec.describe "actionToText" $ do
+
+        Hspec.it "converts an action into text" $ do
+          Revolio.actionToText (Revolio.ActionClock Revolio.DirectionIn)
+            `Hspec.shouldBe` Text.pack "in"
+          Revolio.actionToText (Revolio.ActionClock Revolio.DirectionOut)
+            `Hspec.shouldBe` Text.pack "out"
+          Revolio.actionToText Revolio.ActionHelp
+            `Hspec.shouldBe` Text.pack "help"
+          Revolio.actionToText
+              (Revolio.ActionSetup
+                (Revolio.textToPaychexLoginId $ Text.singleton 'u')
+                (Revolio.textToPaychexPassword $ Text.singleton 'p')
+              )
+            `Hspec.shouldBe` Text.pack "setup u p"
+
     Hspec.describe "Config" $ do
 
       Hspec.it "returns the default config" $ do
@@ -108,6 +124,14 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
         Hspec.it "rejects an invalid direction" $ do
           Revolio.textToDirection (Text.pack "invalid direction")
             `Hspec.shouldSatisfy` Either.isLeft
+
+      Hspec.describe "directionToText" $ do
+
+        Hspec.it "converts a direction into text" $ do
+          Revolio.directionToText Revolio.DirectionIn
+            `Hspec.shouldBe` Text.pack "in"
+          Revolio.directionToText Revolio.DirectionOut
+            `Hspec.shouldBe` Text.pack "out"
 
     Hspec.describe "PaychexClientId" $ do
 
