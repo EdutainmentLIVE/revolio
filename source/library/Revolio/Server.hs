@@ -80,21 +80,16 @@ handler
   :: Type.SlackSigningSecret -> Type.Queue -> Wai.Request -> IO Wai.Response
 handler secret queue request = do
   body <- LazyByteString.toStrict <$> Wai.lazyRequestBody request
-  case getPayload secret request body of
-    Left problem -> pure $ jsonResponse Http.badRequest400 [] problem
-    Right payload -> do
-      Type.enqueue queue payload
-      pure . jsonResponse Http.ok200 [] . Type.textToSlackMessage $ Text.pack
-        "Working on it!"
-
-getPayload
-  :: Type.SlackSigningSecret
-  -> Wai.Request
-  -> ByteString.ByteString
-  -> Either String Type.Payload
-getPayload secret request body = do
-  () <- authorizeRequest secret request body
-  Type.queryToPayload body
+  case authorizeRequest secret request body of
+    Left problem -> pure $ jsonResponse Http.forbidden403 [] problem
+    Right () -> case Type.queryToPayload body of
+      Left problem ->
+        pure . jsonResponse Http.ok200 [] . Type.textToSlackMessage $ Text.pack
+          problem
+      Right payload -> do
+        Type.enqueue queue payload
+        pure . jsonResponse Http.ok200 [] . Type.textToSlackMessage $ Text.pack
+          "Working on it!"
 
 jsonResponse
   :: Aeson.ToJSON body
