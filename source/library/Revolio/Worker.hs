@@ -3,6 +3,7 @@ module Revolio.Worker
   )
 where
 
+import qualified Control.Exception as Exception
 import qualified Control.Monad as Monad
 import qualified Data.Aeson as Aeson
 import qualified Data.ByteString as ByteString
@@ -20,32 +21,43 @@ import qualified Text.Printf as Printf
 runWorker :: Type.PaychexClientId -> Type.Queue -> Type.Vault -> IO ()
 runWorker client queue vault = Monad.forever $ do
   payload <- Type.dequeue queue
-  case Type.payloadAction payload of
-    Type.ActionHelp -> reply payload usageInfo
+  Exception.handle
+    (handleException payload)
+    (handlePayload client vault payload)
 
-    Type.ActionSetup username password -> do
-      Type.insertVault vault (Type.payloadUserId payload) username password
-      reply payload "Successfully saved your credentials."
+handleException :: Type.Payload -> Exception.SomeException -> IO ()
+handleException payload (Exception.SomeException exception) =
+  reply payload
+    $ "Something went wrong: "
+    <> Exception.displayException exception
 
-    Type.ActionClock direction -> do
-      result <- Type.lookupVault vault $ Type.payloadUserId payload
-      case result of
-        Left _ -> reply payload "Failed to find your credentials."
-        Right (username, password) -> do
-          logInResponse <- logIn client username password
-          case getCookie logInResponse of
-            Left _ -> reply payload "Failed to log in."
-            Right cookie -> case getToken cookie of
-              Left _ -> reply payload "Something went wrong after logging in."
-              Right token -> do
-                clockResponse <- clock cookie token direction
-                let
-                  io = case direction of
-                    Type.DirectionIn -> "in"
-                    Type.DirectionOut -> "out"
-                if wasSaved clockResponse
-                  then reply payload $ "Successfully clocked " <> io <> "!"
-                  else reply payload $ "Failed to clock " <> io <> "."
+handlePayload :: Type.PaychexClientId -> Type.Vault -> Type.Payload -> IO ()
+handlePayload client vault payload = case Type.payloadAction payload of
+  Type.ActionHelp -> reply payload usageInfo
+
+  Type.ActionSetup username password -> do
+    Type.insertVault vault (Type.payloadUserId payload) username password
+    reply payload "Successfully saved your credentials."
+
+  Type.ActionClock direction -> do
+    result <- Type.lookupVault vault $ Type.payloadUserId payload
+    case result of
+      Left _ -> reply payload "Failed to find your credentials."
+      Right (username, password) -> do
+        logInResponse <- logIn client username password
+        case getCookie logInResponse of
+          Left _ -> reply payload "Failed to log in."
+          Right cookie -> case getToken cookie of
+            Left _ -> reply payload "Something went wrong after logging in."
+            Right token -> do
+              clockResponse <- clock cookie token direction
+              let
+                io = case direction of
+                  Type.DirectionIn -> "in"
+                  Type.DirectionOut -> "out"
+              if wasSaved clockResponse
+                then reply payload $ "Successfully clocked " <> io <> "!"
+                else reply payload $ "Failed to clock " <> io <> "."
 
 reply :: Type.Payload -> String -> IO ()
 reply payload message = do
