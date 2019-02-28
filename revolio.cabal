@@ -2,8 +2,8 @@ cabal-version: 2.4
 
 name: revolio
 version: 1.0.0.0
-synopsis: Punch in and out of Paychex via Slack.
-description: Revolio enables you to punch in and out of Paychex via Slack.
+synopsis: Clock in and out of Paychex via Slack.
+description: Revolio enables you to clock in and out of Paychex via Slack.
 
 category: Web
 extra-source-files: README.markdown
