@@ -215,8 +215,7 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
             Revolio.queryToPayload . Http.renderQuery False . Http.toQuery
 
         Hspec.it "parses a valid payload" $ do
-          url <- either fail pure . Revolio.textToUrl $ text
-            "http://slack.test"
+          url <- either fail pure . Revolio.textToUrl $ text "http://test"
           let
             payload = Revolio.Payload
               { Revolio.payloadAction = Revolio.ActionHelp
@@ -228,7 +227,7 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
               [ ("user_id", "U1")
               , ("command", "/revolio")
               , ("text", "help")
-              , ("response_url", "http://slack.test")
+              , ("response_url", "http://test")
               ]
             `Hspec.shouldBe` Right payload
 
@@ -259,13 +258,13 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
             `Hspec.shouldSatisfy` Either.isLeft
 
         Hspec.it "success with a valid URL" $ do
-          Revolio.textToUrl (text "http://revolio.test")
+          Revolio.textToUrl (text "http://test")
             `Hspec.shouldSatisfy` Either.isRight
 
       Hspec.describe "urlToText" $ do
 
         Hspec.it "renders a URL as text" $ do
-          let expected = text "http://revolio.test"
+          let expected = text "http://test"
           url <- either fail pure $ Revolio.textToUrl expected
           Revolio.urlToText url `Hspec.shouldBe` expected
 
