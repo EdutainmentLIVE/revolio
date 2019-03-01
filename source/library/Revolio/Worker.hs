@@ -21,7 +21,7 @@ import qualified Revolio.Type.Config as Type
 import qualified Revolio.Type.Direction as Type
 import qualified Revolio.Type.Payload as Type
 import qualified Revolio.Type.Queue as Type
-import qualified Revolio.Type.SlackMessage as Type
+import qualified Revolio.Type.Slack.Message as Type
 import qualified Revolio.Type.StratusTimeBaseUrl as Type
 import qualified Revolio.Type.StratusTimeLoginId as Type
 import qualified Revolio.Type.StratusTimePassword as Type

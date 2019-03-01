@@ -11,7 +11,7 @@ import qualified Data.Text.Encoding as Encoding
 import qualified Network.HTTP.Types as Http
 import qualified Revolio.Type.Action as Type
 import qualified Revolio.Type.Command as Type
-import qualified Revolio.Type.SlackUserId as Type
+import qualified Revolio.Type.Slack.UserId as Type
 import qualified Revolio.Type.Url as Type
 
 data Payload = Payload

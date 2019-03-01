@@ -10,7 +10,7 @@ import qualified Data.Text as Text
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Revolio.Type.StratusTimeBaseUrl as Type
 import qualified Revolio.Type.StratusTimeClientId as Type
-import qualified Revolio.Type.SlackSigningSecret as Type
+import qualified Revolio.Type.Slack.SigningSecret as Type
 import qualified Revolio.Version as Version
 import qualified System.Console.GetOpt as Console
 import qualified Text.Read as Read

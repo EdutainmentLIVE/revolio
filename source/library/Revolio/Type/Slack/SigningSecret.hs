@@ -1,4 +1,4 @@
-module Revolio.Type.SlackSigningSecret
+module Revolio.Type.Slack.SigningSecret
   ( SlackSigningSecret
   , textToSlackSigningSecret
   , slackSigningSecretToText

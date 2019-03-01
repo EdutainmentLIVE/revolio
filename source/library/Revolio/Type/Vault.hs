@@ -8,7 +8,7 @@ where
 
 import qualified Control.Concurrent.STM as Stm
 import qualified Data.Map as Map
-import qualified Revolio.Type.SlackUserId as Type
+import qualified Revolio.Type.Slack.UserId as Type
 import qualified Revolio.Type.StratusTimeLoginId as Type
 import qualified Revolio.Type.StratusTimePassword as Type
 

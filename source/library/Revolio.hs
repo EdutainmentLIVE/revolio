@@ -21,15 +21,15 @@ module Revolio
   , Revolio.Type.Queue.makeQueue
   , Revolio.Type.Queue.enqueue
   , Revolio.Type.Queue.dequeue
-  , Revolio.Type.SlackMessage.SlackMessage
-  , Revolio.Type.SlackMessage.textToSlackMessage
-  , Revolio.Type.SlackMessage.slackMessageToText
-  , Revolio.Type.SlackSigningSecret.SlackSigningSecret
-  , Revolio.Type.SlackSigningSecret.textToSlackSigningSecret
-  , Revolio.Type.SlackSigningSecret.slackSigningSecretToText
-  , Revolio.Type.SlackUserId.SlackUserId
-  , Revolio.Type.SlackUserId.textToSlackUserId
-  , Revolio.Type.SlackUserId.slackUserIdToText
+  , Revolio.Type.Slack.Message.SlackMessage
+  , Revolio.Type.Slack.Message.textToSlackMessage
+  , Revolio.Type.Slack.Message.slackMessageToText
+  , Revolio.Type.Slack.SigningSecret.SlackSigningSecret
+  , Revolio.Type.Slack.SigningSecret.textToSlackSigningSecret
+  , Revolio.Type.Slack.SigningSecret.slackSigningSecretToText
+  , Revolio.Type.Slack.UserId.SlackUserId
+  , Revolio.Type.Slack.UserId.textToSlackUserId
+  , Revolio.Type.Slack.UserId.slackUserIdToText
   , Revolio.Type.StratusTimeClientId.StratusTimeClientId
   , Revolio.Type.StratusTimeClientId.textToStratusTimeClientId
   , Revolio.Type.StratusTimeClientId.stratusTimeClientIdToText
@@ -62,9 +62,9 @@ import qualified Revolio.Type.Config
 import qualified Revolio.Type.Direction
 import qualified Revolio.Type.Payload
 import qualified Revolio.Type.Queue
-import qualified Revolio.Type.SlackMessage
-import qualified Revolio.Type.SlackSigningSecret
-import qualified Revolio.Type.SlackUserId
+import qualified Revolio.Type.Slack.Message
+import qualified Revolio.Type.Slack.SigningSecret
+import qualified Revolio.Type.Slack.UserId
 import qualified Revolio.Type.StratusTimeBaseUrl
 import qualified Revolio.Type.StratusTimeClientId
 import qualified Revolio.Type.StratusTimeLoginId

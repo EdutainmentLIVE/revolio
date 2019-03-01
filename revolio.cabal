@@ -60,9 +60,9 @@ library
     Revolio.Type.Direction
     Revolio.Type.Payload
     Revolio.Type.Queue
-    Revolio.Type.SlackMessage
-    Revolio.Type.SlackSigningSecret
-    Revolio.Type.SlackUserId
+    Revolio.Type.Slack.Message
+    Revolio.Type.Slack.SigningSecret
+    Revolio.Type.Slack.UserId
     Revolio.Type.StratusTimeBaseUrl
     Revolio.Type.StratusTimeClientId
     Revolio.Type.StratusTimeLoginId

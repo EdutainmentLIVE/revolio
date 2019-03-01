@@ -1,4 +1,4 @@
-module Revolio.Type.SlackMessage
+module Revolio.Type.Slack.Message
   ( SlackMessage
   , textToSlackMessage
   , slackMessageToText

@@ -1,4 +1,4 @@
-module Revolio.Type.SlackUserId
+module Revolio.Type.Slack.UserId
   ( SlackUserId
   , textToSlackUserId
   , slackUserIdToText
