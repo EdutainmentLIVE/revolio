@@ -18,9 +18,9 @@ data Action
 
 textToAction :: Text.Text -> Either String Action
 textToAction text = case Text.unpack <$> Text.words text of
-  ["help"] -> Right ActionHelp
   ["clock", "in"] -> Right $ ActionClock Type.DirectionIn
   ["clock", "out"] -> Right $ ActionClock Type.DirectionOut
+  ["help"] -> Right ActionHelp
   ["setup", username, password] -> Right $ ActionSetup
     (Type.textToPaychexLoginId $ Text.pack username)
     (Type.textToPaychexPassword $ Text.pack password)
