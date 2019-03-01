@@ -8,9 +8,9 @@ where
 import qualified Data.Aeson as Aeson
 import qualified Data.Text as Text
 
-newtype SlackMessage
-  = SlackMessage Text.Text
-  deriving (Eq, Show)
+newtype SlackMessage = SlackMessage
+  { unwrapSlackMessage :: Text.Text
+  } deriving (Eq, Show)
 
 instance Aeson.ToJSON SlackMessage where
   toJSON slackMessage = Aeson.object
@@ -22,4 +22,4 @@ textToSlackMessage :: Text.Text -> SlackMessage
 textToSlackMessage = SlackMessage
 
 slackMessageToText :: SlackMessage -> Text.Text
-slackMessageToText (SlackMessage text) = text
+slackMessageToText = unwrapSlackMessage

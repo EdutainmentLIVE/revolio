@@ -8,9 +8,9 @@ where
 import qualified Data.Text as Text
 import qualified Network.URI as Uri
 
-newtype Url
-  = Url Uri.URI
-  deriving (Eq, Show)
+newtype Url = Url
+  { unwrapUrl :: Uri.URI
+  } deriving (Eq, Show)
 
 textToUrl :: Text.Text -> Either String Url
 textToUrl text = case Uri.parseAbsoluteURI $ Text.unpack text of
@@ -18,4 +18,4 @@ textToUrl text = case Uri.parseAbsoluteURI $ Text.unpack text of
   Just uri -> Right $ Url uri
 
 urlToText :: Url -> Text.Text
-urlToText (Url uri) = Text.pack $ Uri.uriToString id uri ""
+urlToText = Text.pack . ($ "") . Uri.uriToString id . unwrapUrl
