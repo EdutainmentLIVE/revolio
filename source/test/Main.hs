@@ -67,11 +67,11 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
             `Hspec.shouldBe` Right action
 
         Hspec.it "parses a clock in action" $ do
-          Revolio.textToAction (text "in")
+          Revolio.textToAction (text "clock in")
             `Hspec.shouldBe` Right (Revolio.ActionClock Revolio.DirectionIn)
 
         Hspec.it "parses a clock out action" $ do
-          Revolio.textToAction (text "out")
+          Revolio.textToAction (text "clock out")
             `Hspec.shouldBe` Right (Revolio.ActionClock Revolio.DirectionOut)
 
         Hspec.it "rejects an invalid action" $ do
@@ -82,9 +82,9 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
 
         Hspec.it "converts an action into text" $ do
           Revolio.actionToText (Revolio.ActionClock Revolio.DirectionIn)
-            `Hspec.shouldBe` text "in"
+            `Hspec.shouldBe` text "clock in"
           Revolio.actionToText (Revolio.ActionClock Revolio.DirectionOut)
-            `Hspec.shouldBe` text "out"
+            `Hspec.shouldBe` text "clock out"
           Revolio.actionToText Revolio.ActionHelp `Hspec.shouldBe` text "help"
           Revolio.actionToText
               (Revolio.ActionSetup
