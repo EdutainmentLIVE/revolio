@@ -59,14 +59,14 @@ library
     Revolio.Type.Command
     Revolio.Type.Config
     Revolio.Type.Direction
-    Revolio.Type.StratusTimeClientId
-    Revolio.Type.StratusTimeLoginId
-    Revolio.Type.StratusTimePassword
     Revolio.Type.Payload
     Revolio.Type.Queue
     Revolio.Type.SlackMessage
     Revolio.Type.SlackSigningSecret
     Revolio.Type.SlackUserId
+    Revolio.Type.StratusTimeClientId
+    Revolio.Type.StratusTimeLoginId
+    Revolio.Type.StratusTimePassword
     Revolio.Type.Url
     Revolio.Type.Vault
     Revolio.Version

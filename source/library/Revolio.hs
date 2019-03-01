@@ -15,15 +15,6 @@ module Revolio
   , Revolio.Type.Direction(..)
   , Revolio.Type.textToDirection
   , Revolio.Type.directionToText
-  , Revolio.Type.StratusTimeClientId
-  , Revolio.Type.textToStratusTimeClientId
-  , Revolio.Type.stratusTimeClientIdToText
-  , Revolio.Type.StratusTimeLoginId
-  , Revolio.Type.textToStratusTimeLoginId
-  , Revolio.Type.stratusTimeLoginIdToText
-  , Revolio.Type.StratusTimePassword
-  , Revolio.Type.textToStratusTimePassword
-  , Revolio.Type.stratusTimePasswordToText
   , Revolio.Type.Payload(..)
   , Revolio.Type.queryToPayload
   , Revolio.Type.Queue
@@ -39,6 +30,15 @@ module Revolio
   , Revolio.Type.SlackUserId
   , Revolio.Type.textToSlackUserId
   , Revolio.Type.slackUserIdToText
+  , Revolio.Type.StratusTimeClientId
+  , Revolio.Type.textToStratusTimeClientId
+  , Revolio.Type.stratusTimeClientIdToText
+  , Revolio.Type.StratusTimeLoginId
+  , Revolio.Type.textToStratusTimeLoginId
+  , Revolio.Type.stratusTimeLoginIdToText
+  , Revolio.Type.StratusTimePassword
+  , Revolio.Type.textToStratusTimePassword
+  , Revolio.Type.stratusTimePasswordToText
   , Revolio.Type.Url
   , Revolio.Type.textToUrl
   , Revolio.Type.urlToText

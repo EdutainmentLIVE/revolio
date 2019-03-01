@@ -31,7 +31,8 @@ handleException payload (Exception.SomeException exception) =
     $ "Something went wrong: "
     <> Exception.displayException exception
 
-handlePayload :: Type.StratusTimeClientId -> Type.Vault -> Type.Payload -> IO ()
+handlePayload
+  :: Type.StratusTimeClientId -> Type.Vault -> Type.Payload -> IO ()
 handlePayload client vault payload = case Type.payloadAction payload of
   Type.ActionHelp -> reply payload usageInfo
 

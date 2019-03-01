@@ -18,7 +18,8 @@ instance Http.QueryValueLike StratusTimePassword where
   toQueryValue = Http.toQueryValue . stratusTimePasswordToText
 
 textToStratusTimePassword :: Text.Text -> StratusTimePassword
-textToStratusTimePassword = StratusTimePassword . Memory.convert . Encoding.encodeUtf8
+textToStratusTimePassword =
+  StratusTimePassword . Memory.convert . Encoding.encodeUtf8
 
 stratusTimePasswordToText :: StratusTimePassword -> Text.Text
 stratusTimePasswordToText =
