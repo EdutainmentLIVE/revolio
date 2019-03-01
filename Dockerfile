@@ -24,8 +24,9 @@ FROM debian:9.7
   RUN apt-get update && apt-get install --assume-yes \
     ca-certificates libgmp-dev netbase
   COPY --from=build /usr/local/bin/revolio /usr/local/bin/revolio
-  EXPOSE 8080
+  EXPOSE 80
   CMD revolio \
     --client "$PAYCHEX_CLIENT_ID" \
     --host '*' \
+    --port 8080 \
     --secret "$SLACK_SIGNING_SECRET"
