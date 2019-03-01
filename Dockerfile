@@ -19,7 +19,7 @@ FROM haskell:8.6.3 AS build
     --test
   RUN stack build --test
 
-FROM debian:9.7
+FROM debian:9.7-slim
 
   RUN apt-get update && apt-get install --assume-yes \
     ca-certificates libgmp-dev netbase
