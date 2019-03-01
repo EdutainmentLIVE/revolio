@@ -97,9 +97,9 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
 
       Hspec.describe "textToCommand" $ do
 
-        Hspec.it "parses a clock command" $ do
-          Revolio.textToCommand (text "/clock")
-            `Hspec.shouldBe` Right Revolio.CommandClock
+        Hspec.it "parses a revolio command" $ do
+          Revolio.textToCommand (text "/revolio")
+            `Hspec.shouldBe` Right Revolio.CommandRevolio
 
         Hspec.it "rejects an invalid command" $ do
           Revolio.textToCommand (text "invalid command")
@@ -108,8 +108,8 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
       Hspec.describe "commandToText" $ do
 
         Hspec.it "converts a command into text" $ do
-          Revolio.commandToText Revolio.CommandClock
-            `Hspec.shouldBe` text "/clock"
+          Revolio.commandToText Revolio.CommandRevolio
+            `Hspec.shouldBe` text "/revolio"
 
     Hspec.describe "Config" $ do
 
@@ -210,7 +210,7 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
           let
             payload = Revolio.Payload
               { Revolio.payloadAction = Revolio.ActionHelp
-              , Revolio.payloadCommand = Revolio.CommandClock
+              , Revolio.payloadCommand = Revolio.CommandRevolio
               , Revolio.payloadResponseUrl =
                 either undefined id . Revolio.textToUrl $ text
                   "http://slack.test"
@@ -218,7 +218,7 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
               }
           parse
               [ ("user_id", "U1")
-              , ("command", "/clock")
+              , ("command", "/revolio")
               , ("text", "help")
               , ("response_url", "http://slack.test")
               ]

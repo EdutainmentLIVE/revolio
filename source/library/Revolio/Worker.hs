@@ -88,7 +88,7 @@ usageInfo =
       \- `%s %s`: Set up your username and password\n\
       \- `%s %s`: Clock in\n\
       \- `%s %s`: Clock out\n"
-    c = Type.commandToText Type.CommandClock
+    c = Type.commandToText Type.CommandRevolio
     h = Type.actionToText Type.ActionHelp
     u = Type.textToPaychexLoginId $ Text.pack "USERNAME"
     p = Type.textToPaychexPassword $ Text.pack "PASSWORD"
