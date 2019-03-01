@@ -63,10 +63,10 @@ library
     Revolio.Type.Slack.Message
     Revolio.Type.Slack.SigningSecret
     Revolio.Type.Slack.UserId
-    Revolio.Type.StratusTimeBaseUrl
-    Revolio.Type.StratusTimeClientId
-    Revolio.Type.StratusTimeLoginId
-    Revolio.Type.StratusTimePassword
+    Revolio.Type.StratusTime.BaseUrl
+    Revolio.Type.StratusTime.ClientId
+    Revolio.Type.StratusTime.LoginId
+    Revolio.Type.StratusTime.Password
     Revolio.Type.Url
     Revolio.Type.Vault
     Revolio.Version

@@ -7,8 +7,8 @@ where
 
 import qualified Data.Text as Text
 import qualified Revolio.Type.Direction as Type
-import qualified Revolio.Type.StratusTimeLoginId as Type
-import qualified Revolio.Type.StratusTimePassword as Type
+import qualified Revolio.Type.StratusTime.LoginId as Type
+import qualified Revolio.Type.StratusTime.Password as Type
 
 data Action
   = ActionClock Type.Direction

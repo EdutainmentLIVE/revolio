@@ -30,18 +30,18 @@ module Revolio
   , Revolio.Type.Slack.UserId.SlackUserId
   , Revolio.Type.Slack.UserId.textToSlackUserId
   , Revolio.Type.Slack.UserId.slackUserIdToText
-  , Revolio.Type.StratusTimeClientId.StratusTimeClientId
-  , Revolio.Type.StratusTimeClientId.textToStratusTimeClientId
-  , Revolio.Type.StratusTimeClientId.stratusTimeClientIdToText
-  , Revolio.Type.StratusTimeBaseUrl.StratusTimeBaseUrl
-  , Revolio.Type.StratusTimeBaseUrl.textToStratusTimeBaseUrl
-  , Revolio.Type.StratusTimeBaseUrl.stratusTimeBaseUrlToText
-  , Revolio.Type.StratusTimeLoginId.StratusTimeLoginId
-  , Revolio.Type.StratusTimeLoginId.textToStratusTimeLoginId
-  , Revolio.Type.StratusTimeLoginId.stratusTimeLoginIdToText
-  , Revolio.Type.StratusTimePassword.StratusTimePassword
-  , Revolio.Type.StratusTimePassword.textToStratusTimePassword
-  , Revolio.Type.StratusTimePassword.stratusTimePasswordToText
+  , Revolio.Type.StratusTime.ClientId.StratusTimeClientId
+  , Revolio.Type.StratusTime.ClientId.textToStratusTimeClientId
+  , Revolio.Type.StratusTime.ClientId.stratusTimeClientIdToText
+  , Revolio.Type.StratusTime.BaseUrl.StratusTimeBaseUrl
+  , Revolio.Type.StratusTime.BaseUrl.textToStratusTimeBaseUrl
+  , Revolio.Type.StratusTime.BaseUrl.stratusTimeBaseUrlToText
+  , Revolio.Type.StratusTime.LoginId.StratusTimeLoginId
+  , Revolio.Type.StratusTime.LoginId.textToStratusTimeLoginId
+  , Revolio.Type.StratusTime.LoginId.stratusTimeLoginIdToText
+  , Revolio.Type.StratusTime.Password.StratusTimePassword
+  , Revolio.Type.StratusTime.Password.textToStratusTimePassword
+  , Revolio.Type.StratusTime.Password.stratusTimePasswordToText
   , Revolio.Type.Url.Url
   , Revolio.Type.Url.textToUrl
   , Revolio.Type.Url.urlToText
@@ -65,10 +65,10 @@ import qualified Revolio.Type.Queue
 import qualified Revolio.Type.Slack.Message
 import qualified Revolio.Type.Slack.SigningSecret
 import qualified Revolio.Type.Slack.UserId
-import qualified Revolio.Type.StratusTimeBaseUrl
-import qualified Revolio.Type.StratusTimeClientId
-import qualified Revolio.Type.StratusTimeLoginId
-import qualified Revolio.Type.StratusTimePassword
+import qualified Revolio.Type.StratusTime.BaseUrl
+import qualified Revolio.Type.StratusTime.ClientId
+import qualified Revolio.Type.StratusTime.LoginId
+import qualified Revolio.Type.StratusTime.Password
 import qualified Revolio.Type.Url
 import qualified Revolio.Type.Vault
 import qualified Revolio.Version

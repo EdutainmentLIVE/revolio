@@ -1,4 +1,4 @@
-module Revolio.Type.StratusTimePassword
+module Revolio.Type.StratusTime.Password
   ( StratusTimePassword
   , textToStratusTimePassword
   , stratusTimePasswordToText

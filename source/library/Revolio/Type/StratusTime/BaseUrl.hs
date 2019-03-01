@@ -1,4 +1,4 @@
-module Revolio.Type.StratusTimeBaseUrl
+module Revolio.Type.StratusTime.BaseUrl
   ( StratusTimeBaseUrl
   , textToStratusTimeBaseUrl
   , stratusTimeBaseUrlToText

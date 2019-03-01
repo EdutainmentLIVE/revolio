@@ -1,4 +1,4 @@
-module Revolio.Type.StratusTimeClientId
+module Revolio.Type.StratusTime.ClientId
   ( StratusTimeClientId
   , textToStratusTimeClientId
   , stratusTimeClientIdToText
