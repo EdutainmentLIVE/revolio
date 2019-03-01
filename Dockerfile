@@ -28,5 +28,5 @@ FROM debian:9.7
   CMD revolio \
     --client "$PAYCHEX_CLIENT_ID" \
     --host '*' \
-    --port 8080 \
+    --port 80 \
     --secret "$SLACK_SIGNING_SECRET"
