@@ -151,6 +151,14 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
         Revolio.configSecret config
           `Hspec.shouldBe` Revolio.textToSlackSigningSecret (text "it")
 
+      Hspec.it "sets the Stratus Time base URL" $ do
+        config <- either fail pure . snd $ Revolio.getConfig
+          ""
+          ["-u", "http://test"]
+        Revolio.configUrl config
+          `Hspec.shouldBe` Revolio.textToStratusTimeBaseUrl
+                             (text "http://test")
+
     Hspec.describe "Direction" $ do
 
       Hspec.it "can be used as a query value" $ do

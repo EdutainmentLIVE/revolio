@@ -18,12 +18,12 @@ import qualified Network.HTTP.Types.QueryLike as Http
 import qualified Revolio.Type as Type
 import qualified Text.Printf as Printf
 
-runWorker :: Type.StratusTimeClientId -> Type.Queue -> Type.Vault -> IO ()
-runWorker client queue vault = Monad.forever $ do
+runWorker :: Type.Config -> Type.Queue -> Type.Vault -> IO ()
+runWorker config queue vault = Monad.forever $ do
   payload <- Type.dequeue queue
   Exception.handle
     (handleException payload)
-    (handlePayload client vault payload)
+    (handlePayload config vault payload)
 
 handleException :: Type.Payload -> Exception.SomeException -> IO ()
 handleException payload (Exception.SomeException exception) =
@@ -31,9 +31,8 @@ handleException payload (Exception.SomeException exception) =
     $ "Something went wrong: "
     <> Exception.displayException exception
 
-handlePayload
-  :: Type.StratusTimeClientId -> Type.Vault -> Type.Payload -> IO ()
-handlePayload client vault payload = case Type.payloadAction payload of
+handlePayload :: Type.Config -> Type.Vault -> Type.Payload -> IO ()
+handlePayload config vault payload = case Type.payloadAction payload of
   Type.ActionHelp -> reply payload usageInfo
 
   Type.ActionSetup username password -> do
@@ -45,13 +44,13 @@ handlePayload client vault payload = case Type.payloadAction payload of
     case result of
       Left _ -> reply payload "Failed to find your credentials."
       Right (username, password) -> do
-        logInResponse <- logIn client username password
+        logInResponse <- logIn config username password
         case getCookie logInResponse of
           Left _ -> reply payload "Failed to log in."
           Right cookie -> case getToken cookie of
             Left _ -> reply payload "Something went wrong after logging in."
             Right token -> do
-              clockResponse <- clock cookie token direction
+              clockResponse <- clock config cookie token direction
               let
                 io = case direction of
                   Type.DirectionIn -> "in"
@@ -99,13 +98,13 @@ usageInfo =
   in Printf.printf format c h c s c i c o
 
 logIn
-  :: Type.StratusTimeClientId
+  :: Type.Config
   -> Type.StratusTimeLoginId
   -> Type.StratusTimePassword
   -> IO (Client.Response LazyByteString.ByteString)
-logIn client username password = do
+logIn config username password = do
   manager <- Tls.getGlobalManager
-  request <- Client.parseRequest "https://paychex.cloud.centralservers.com"
+  request <- makeRequest (Type.configUrl config) ""
   Client.httpLbs
     request
       { Client.method = Http.methodPost
@@ -114,12 +113,18 @@ logIn client username password = do
         False
         [ (Http.toQueryKey "__VIEWSTATE", Http.toQueryValue "")
         , (Http.toQueryKey "btnLogin", Http.toQueryValue "login")
-        , (Http.toQueryKey "txtCustomerAlias", Http.toQueryValue client)
+        , ( Http.toQueryKey "txtCustomerAlias"
+          , Http.toQueryValue $ Type.configClient config
+          )
         , (Http.toQueryKey "txtLoginID", Http.toQueryValue username)
         , (Http.toQueryKey "txtPassword", Http.toQueryValue password)
         ]
       }
     manager
+
+makeRequest :: Type.StratusTimeBaseUrl -> String -> IO Client.Request
+makeRequest url path =
+  Client.parseRequest $ Text.unpack (Type.stratusTimeBaseUrlToText url) <> path
 
 getCookie :: Client.Response body -> Either String Client.Cookie
 getCookie =
@@ -138,15 +143,16 @@ getToken cookie = case ByteString.uncons $ Client.cookie_name cookie of
   _ -> Left "missing token"
 
 clock
-  :: Client.Cookie
+  :: Type.Config
+  -> Client.Cookie
   -> ByteString.ByteString
   -> Type.Direction
   -> IO (Client.Response LazyByteString.ByteString)
-clock cookie token direction = do
+clock config cookie token direction = do
   manager <- Tls.getGlobalManager
-  request <-
-    Client.parseRequest
-      "https://paychex.cloud.centralservers.com/EmployeeHome/EmployeeHome/AddPunch"
+  request <- makeRequest
+    (Type.configUrl config)
+    "/EmployeeHome/EmployeeHome/AddPunch"
   Client.httpLbs
     request
       { Client.method = Http.methodPost

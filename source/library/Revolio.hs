@@ -30,6 +30,9 @@ module Revolio
   , Revolio.Type.SlackUserId
   , Revolio.Type.textToSlackUserId
   , Revolio.Type.slackUserIdToText
+  , Revolio.Type.StratusTimeBaseUrl
+  , Revolio.Type.textToStratusTimeBaseUrl
+  , Revolio.Type.stratusTimeBaseUrlToText
   , Revolio.Type.StratusTimeClientId
   , Revolio.Type.textToStratusTimeClientId
   , Revolio.Type.stratusTimeClientIdToText

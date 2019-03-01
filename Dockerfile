@@ -29,4 +29,5 @@ FROM debian:9.7-slim
     --client "$STRATUS_TIME_CLIENT_ID" \
     --host '*' \
     --port 80 \
-    --secret "$SLACK_SIGNING_SECRET"
+    --secret "$SLACK_SIGNING_SECRET" \
+    --url "$STRATUS_TIME_BASE_URL"

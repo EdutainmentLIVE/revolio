@@ -8,6 +8,7 @@ where
 import qualified Data.String as String
 import qualified Data.Text as Text
 import qualified Network.Wai.Handler.Warp as Warp
+import qualified Revolio.Type.StratusTimeBaseUrl as Type
 import qualified Revolio.Type.StratusTimeClientId as Type
 import qualified Revolio.Type.SlackSigningSecret as Type
 import qualified Revolio.Version as Version
@@ -21,6 +22,7 @@ data Config = Config
   , configSecret :: Type.SlackSigningSecret
   , configShowHelp :: Bool
   , configShowVersion :: Bool
+  , configUrl :: Type.StratusTimeBaseUrl
   } deriving (Eq, Show)
 
 defaultConfig :: Config
@@ -33,6 +35,8 @@ defaultConfig = Config
     $ Text.pack "arbitrary-slack-signing-secret"
   , configShowHelp = False
   , configShowVersion = False
+  , configUrl = Type.textToStratusTimeBaseUrl
+    $ Text.pack "https://stratustime.centralservers.com"
   }
 
 getConfig :: String -> [String] -> (String, Either String Config)
@@ -51,6 +55,7 @@ options =
   , hostOption
   , portOption
   , secretOption
+  , urlOption
   , versionOption
   ]
 
@@ -87,6 +92,14 @@ secretOption =
     . requireArgument "SECRET"
     $ \string config -> Right config
         { configSecret = Type.textToSlackSigningSecret $ Text.pack string
+        }
+
+urlOption :: Option
+urlOption =
+  makeOption ['u'] ["url"] "set the Stratus Time base URL"
+    . requireArgument "URL"
+    $ \string config -> Right config
+        { configUrl = Type.textToStratusTimeBaseUrl $ Text.pack string
         }
 
 versionOption :: Option

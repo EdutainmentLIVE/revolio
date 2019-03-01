@@ -29,6 +29,9 @@ module Revolio.Type
   , Revolio.Type.StratusTimeClientId.StratusTimeClientId
   , Revolio.Type.StratusTimeClientId.textToStratusTimeClientId
   , Revolio.Type.StratusTimeClientId.stratusTimeClientIdToText
+  , Revolio.Type.StratusTimeBaseUrl.StratusTimeBaseUrl
+  , Revolio.Type.StratusTimeBaseUrl.textToStratusTimeBaseUrl
+  , Revolio.Type.StratusTimeBaseUrl.stratusTimeBaseUrlToText
   , Revolio.Type.StratusTimeLoginId.StratusTimeLoginId
   , Revolio.Type.StratusTimeLoginId.textToStratusTimeLoginId
   , Revolio.Type.StratusTimeLoginId.stratusTimeLoginIdToText
@@ -54,6 +57,7 @@ import qualified Revolio.Type.Queue
 import qualified Revolio.Type.SlackMessage
 import qualified Revolio.Type.SlackSigningSecret
 import qualified Revolio.Type.SlackUserId
+import qualified Revolio.Type.StratusTimeBaseUrl
 import qualified Revolio.Type.StratusTimeClientId
 import qualified Revolio.Type.StratusTimeLoginId
 import qualified Revolio.Type.StratusTimePassword

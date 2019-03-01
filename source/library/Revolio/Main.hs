@@ -28,4 +28,4 @@ defaultMain = do
   vault <- Type.makeVault
   Async.race_
     (Server.runServer config queue)
-    (Worker.runWorker (Type.configClient config) queue vault)
+    (Worker.runWorker config queue vault)
