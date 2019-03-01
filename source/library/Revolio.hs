@@ -15,15 +15,15 @@ module Revolio
   , Revolio.Type.Direction(..)
   , Revolio.Type.textToDirection
   , Revolio.Type.directionToText
-  , Revolio.Type.PaychexClientId
-  , Revolio.Type.textToPaychexClientId
-  , Revolio.Type.paychexClientIdToText
-  , Revolio.Type.PaychexLoginId
-  , Revolio.Type.textToPaychexLoginId
-  , Revolio.Type.paychexLoginIdToText
-  , Revolio.Type.PaychexPassword
-  , Revolio.Type.textToPaychexPassword
-  , Revolio.Type.paychexPasswordToText
+  , Revolio.Type.StratusTimeClientId
+  , Revolio.Type.textToStratusTimeClientId
+  , Revolio.Type.stratusTimeClientIdToText
+  , Revolio.Type.StratusTimeLoginId
+  , Revolio.Type.textToStratusTimeLoginId
+  , Revolio.Type.stratusTimeLoginIdToText
+  , Revolio.Type.StratusTimePassword
+  , Revolio.Type.textToStratusTimePassword
+  , Revolio.Type.stratusTimePasswordToText
   , Revolio.Type.Payload(..)
   , Revolio.Type.queryToPayload
   , Revolio.Type.Queue

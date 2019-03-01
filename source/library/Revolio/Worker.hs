@@ -18,7 +18,7 @@ import qualified Network.HTTP.Types.QueryLike as Http
 import qualified Revolio.Type as Type
 import qualified Text.Printf as Printf
 
-runWorker :: Type.PaychexClientId -> Type.Queue -> Type.Vault -> IO ()
+runWorker :: Type.StratusTimeClientId -> Type.Queue -> Type.Vault -> IO ()
 runWorker client queue vault = Monad.forever $ do
   payload <- Type.dequeue queue
   Exception.handle
@@ -31,7 +31,7 @@ handleException payload (Exception.SomeException exception) =
     $ "Something went wrong: "
     <> Exception.displayException exception
 
-handlePayload :: Type.PaychexClientId -> Type.Vault -> Type.Payload -> IO ()
+handlePayload :: Type.StratusTimeClientId -> Type.Vault -> Type.Payload -> IO ()
 handlePayload client vault payload = case Type.payloadAction payload of
   Type.ActionHelp -> reply payload usageInfo
 
@@ -90,17 +90,17 @@ usageInfo =
       \- `%s %s`: Clock out\n"
     c = Type.commandToText Type.CommandRevolio
     h = Type.actionToText Type.ActionHelp
-    u = Type.textToPaychexLoginId $ Text.pack "USERNAME"
-    p = Type.textToPaychexPassword $ Text.pack "PASSWORD"
+    u = Type.textToStratusTimeLoginId $ Text.pack "USERNAME"
+    p = Type.textToStratusTimePassword $ Text.pack "PASSWORD"
     s = Type.actionToText $ Type.ActionSetup u p
     i = Type.actionToText $ Type.ActionClock Type.DirectionIn
     o = Type.actionToText $ Type.ActionClock Type.DirectionOut
   in Printf.printf format c h c s c i c o
 
 logIn
-  :: Type.PaychexClientId
-  -> Type.PaychexLoginId
-  -> Type.PaychexPassword
+  :: Type.StratusTimeClientId
+  -> Type.StratusTimeLoginId
+  -> Type.StratusTimePassword
   -> IO (Client.Response LazyByteString.ByteString)
 logIn client username password = do
   manager <- Tls.getGlobalManager

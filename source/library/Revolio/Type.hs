@@ -11,15 +11,15 @@ module Revolio.Type
   , Revolio.Type.Direction.Direction(..)
   , Revolio.Type.Direction.textToDirection
   , Revolio.Type.Direction.directionToText
-  , Revolio.Type.PaychexClientId.PaychexClientId
-  , Revolio.Type.PaychexClientId.textToPaychexClientId
-  , Revolio.Type.PaychexClientId.paychexClientIdToText
-  , Revolio.Type.PaychexLoginId.PaychexLoginId
-  , Revolio.Type.PaychexLoginId.textToPaychexLoginId
-  , Revolio.Type.PaychexLoginId.paychexLoginIdToText
-  , Revolio.Type.PaychexPassword.PaychexPassword
-  , Revolio.Type.PaychexPassword.textToPaychexPassword
-  , Revolio.Type.PaychexPassword.paychexPasswordToText
+  , Revolio.Type.StratusTimeClientId.StratusTimeClientId
+  , Revolio.Type.StratusTimeClientId.textToStratusTimeClientId
+  , Revolio.Type.StratusTimeClientId.stratusTimeClientIdToText
+  , Revolio.Type.StratusTimeLoginId.StratusTimeLoginId
+  , Revolio.Type.StratusTimeLoginId.textToStratusTimeLoginId
+  , Revolio.Type.StratusTimeLoginId.stratusTimeLoginIdToText
+  , Revolio.Type.StratusTimePassword.StratusTimePassword
+  , Revolio.Type.StratusTimePassword.textToStratusTimePassword
+  , Revolio.Type.StratusTimePassword.stratusTimePasswordToText
   , Revolio.Type.Payload.Payload(..)
   , Revolio.Type.Payload.queryToPayload
   , Revolio.Type.Queue.Queue
@@ -49,9 +49,9 @@ import qualified Revolio.Type.Action
 import qualified Revolio.Type.Command
 import qualified Revolio.Type.Config
 import qualified Revolio.Type.Direction
-import qualified Revolio.Type.PaychexClientId
-import qualified Revolio.Type.PaychexLoginId
-import qualified Revolio.Type.PaychexPassword
+import qualified Revolio.Type.StratusTimeClientId
+import qualified Revolio.Type.StratusTimeLoginId
+import qualified Revolio.Type.StratusTimePassword
 import qualified Revolio.Type.Payload
 import qualified Revolio.Type.Queue
 import qualified Revolio.Type.SlackMessage

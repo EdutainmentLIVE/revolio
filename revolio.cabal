@@ -2,8 +2,8 @@ cabal-version: 2.4
 
 name: revolio
 version: 1.0.0.0
-synopsis: Clock in and out of Paychex via Slack.
-description: Revolio enables you to clock in and out of Paychex via Slack.
+synopsis: Clock in and out of Stratus Time via Slack.
+description: Revolio enables you to clock in and out of Stratus Time via Slack.
 
 category: Web
 extra-source-files: README.markdown
@@ -59,9 +59,9 @@ library
     Revolio.Type.Command
     Revolio.Type.Config
     Revolio.Type.Direction
-    Revolio.Type.PaychexClientId
-    Revolio.Type.PaychexLoginId
-    Revolio.Type.PaychexPassword
+    Revolio.Type.StratusTimeClientId
+    Revolio.Type.StratusTimeLoginId
+    Revolio.Type.StratusTimePassword
     Revolio.Type.Payload
     Revolio.Type.Queue
     Revolio.Type.SlackMessage

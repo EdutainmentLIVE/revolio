@@ -26,7 +26,7 @@ FROM debian:9.7-slim
   COPY --from=build /usr/local/bin/revolio /usr/local/bin/revolio
   EXPOSE 80
   CMD revolio \
-    --client "$PAYCHEX_CLIENT_ID" \
+    --client "$STRATUS_TIME_CLIENT_ID" \
     --host '*' \
     --port 80 \
     --secret "$SLACK_SIGNING_SECRET"

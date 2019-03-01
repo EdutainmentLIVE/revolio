@@ -8,14 +8,14 @@ where
 import qualified Data.String as String
 import qualified Data.Text as Text
 import qualified Network.Wai.Handler.Warp as Warp
-import qualified Revolio.Type.PaychexClientId as Type
+import qualified Revolio.Type.StratusTimeClientId as Type
 import qualified Revolio.Type.SlackSigningSecret as Type
 import qualified Revolio.Version as Version
 import qualified System.Console.GetOpt as Console
 import qualified Text.Read as Read
 
 data Config = Config
-  { configClient :: Type.PaychexClientId
+  { configClient :: Type.StratusTimeClientId
   , configHost :: Warp.HostPreference
   , configPort :: Warp.Port
   , configSecret :: Type.SlackSigningSecret
@@ -25,8 +25,8 @@ data Config = Config
 
 defaultConfig :: Config
 defaultConfig = Config
-  { configClient = Type.textToPaychexClientId
-    $ Text.pack "arbitrary-paychex-client-id"
+  { configClient = Type.textToStratusTimeClientId
+    $ Text.pack "arbitrary-stratus-time-client-id"
   , configHost = String.fromString "127.0.0.1"
   , configPort = 8080
   , configSecret = Type.textToSlackSigningSecret
@@ -56,10 +56,10 @@ options =
 
 clientOption :: Option
 clientOption =
-  makeOption ['c'] ["client"] "set the Paychex client ID"
+  makeOption ['c'] ["client"] "set the Stratus Time client ID"
     . requireArgument "CLIENT"
     $ \string config -> Right config
-        { configClient = Type.textToPaychexClientId $ Text.pack string
+        { configClient = Type.textToStratusTimeClientId $ Text.pack string
         }
 
 helpOption :: Option

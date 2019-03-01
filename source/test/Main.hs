@@ -61,8 +61,8 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
         Hspec.it "parses a setup action" $ do
           let
             action = Revolio.ActionSetup
-              (Revolio.textToPaychexLoginId $ text "username")
-              (Revolio.textToPaychexPassword $ text "password")
+              (Revolio.textToStratusTimeLoginId $ text "username")
+              (Revolio.textToStratusTimePassword $ text "password")
           Revolio.textToAction (text "setup username password")
             `Hspec.shouldBe` Right action
 
@@ -88,8 +88,8 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
           Revolio.actionToText Revolio.ActionHelp `Hspec.shouldBe` text "help"
           Revolio.actionToText
               (Revolio.ActionSetup
-                (Revolio.textToPaychexLoginId $ text "u")
-                (Revolio.textToPaychexPassword $ text "p")
+                (Revolio.textToStratusTimeLoginId $ text "u")
+                (Revolio.textToStratusTimePassword $ text "p")
               )
             `Hspec.shouldBe` text "setup u p"
 
@@ -133,10 +133,10 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
           ["-v"]
         version `Hspec.shouldNotSatisfy` null
 
-      Hspec.it "sets the Paychex client ID" $ do
+      Hspec.it "sets the Stratus Time client ID" $ do
         config <- either fail pure . snd $ Revolio.getConfig "" ["-c", "it"]
         Revolio.configClient config
-          `Hspec.shouldBe` Revolio.textToPaychexClientId (text "it")
+          `Hspec.shouldBe` Revolio.textToStratusTimeClientId (text "it")
 
       Hspec.it "sets the host" $ do
         config <- either fail pure . snd $ Revolio.getConfig "" ["-h", "*"]
@@ -179,22 +179,22 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
           Revolio.directionToText Revolio.DirectionOut
             `Hspec.shouldBe` text "out"
 
-    Hspec.describe "PaychexClientId" $ do
+    Hspec.describe "StratusTimeClientId" $ do
 
       Hspec.it "can be used as a query value" $ do
-        (Http.toQueryValue . Revolio.textToPaychexClientId $ text "123")
+        (Http.toQueryValue . Revolio.textToStratusTimeClientId $ text "123")
           `Hspec.shouldBe` (Just $ utf8 "123")
 
-    Hspec.describe "PaychexLoginId" $ do
+    Hspec.describe "StratusTimeLoginId" $ do
 
       Hspec.it "can be used as a query value" $ do
-        (Http.toQueryValue . Revolio.textToPaychexLoginId $ text "you")
+        (Http.toQueryValue . Revolio.textToStratusTimeLoginId $ text "you")
           `Hspec.shouldBe` (Just $ utf8 "you")
 
-    Hspec.describe "PaychexPassword" $ do
+    Hspec.describe "StratusTimePassword" $ do
 
       Hspec.it "can be used as a query value" $ do
-        (Http.toQueryValue . Revolio.textToPaychexPassword $ text "axe")
+        (Http.toQueryValue . Revolio.textToStratusTimePassword $ text "axe")
           `Hspec.shouldBe` (Just $ utf8 "axe")
 
     Hspec.describe "Payload" $ do
