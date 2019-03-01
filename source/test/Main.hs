@@ -207,13 +207,13 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
             Revolio.queryToPayload . Http.renderQuery False . Http.toQuery
 
         Hspec.it "parses a valid payload" $ do
+          url <- either fail pure . Revolio.textToUrl $ text
+            "http://slack.test"
           let
             payload = Revolio.Payload
               { Revolio.payloadAction = Revolio.ActionHelp
               , Revolio.payloadCommand = Revolio.CommandRevolio
-              , Revolio.payloadResponseUrl =
-                either undefined id . Revolio.textToUrl $ text
-                  "http://slack.test"
+              , Revolio.payloadResponseUrl = url
               , Revolio.payloadUserId = Revolio.textToSlackUserId $ text "U1"
               }
           parse
