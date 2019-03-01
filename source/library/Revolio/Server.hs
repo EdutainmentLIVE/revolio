@@ -67,7 +67,7 @@ application secret queue request respond = do
     path = Text.unpack <$> Wai.pathInfo request
     method = Http.parseMethod $ Wai.requestMethod request
   response <- case path of
-    [] -> case method of
+    ["slack"] -> case method of
       Right Http.POST -> handler secret queue request
       _ -> pure $ jsonResponse Http.methodNotAllowed405 [] Aeson.Null
     ["health-check"] -> case method of
