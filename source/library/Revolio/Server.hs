@@ -19,7 +19,11 @@ import qualified Network.HTTP.Types as Http
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Middleware
-import qualified Revolio.Type as Type
+import qualified Revolio.Type.Config as Type
+import qualified Revolio.Type.Payload as Type
+import qualified Revolio.Type.Queue as Type
+import qualified Revolio.Type.SlackMessage as Type
+import qualified Revolio.Type.SlackSigningSecret as Type
 import qualified Text.Printf as Printf
 
 runServer :: Type.Config -> Type.Queue -> IO ()

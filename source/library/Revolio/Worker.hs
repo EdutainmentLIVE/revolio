@@ -15,7 +15,18 @@ import qualified Network.HTTP.Client as Client
 import qualified Network.HTTP.Client.TLS as Tls
 import qualified Network.HTTP.Types as Http
 import qualified Network.HTTP.Types.QueryLike as Http
-import qualified Revolio.Type as Type
+import qualified Revolio.Type.Action as Type
+import qualified Revolio.Type.Command as Type
+import qualified Revolio.Type.Config as Type
+import qualified Revolio.Type.Direction as Type
+import qualified Revolio.Type.Payload as Type
+import qualified Revolio.Type.Queue as Type
+import qualified Revolio.Type.SlackMessage as Type
+import qualified Revolio.Type.StratusTimeBaseUrl as Type
+import qualified Revolio.Type.StratusTimeLoginId as Type
+import qualified Revolio.Type.StratusTimePassword as Type
+import qualified Revolio.Type.Url as Type
+import qualified Revolio.Type.Vault as Type
 import qualified Text.Printf as Printf
 
 runWorker :: Type.Config -> Type.Queue -> Type.Vault -> IO ()

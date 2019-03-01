@@ -54,7 +54,6 @@ library
     Paths_revolio
     Revolio.Main
     Revolio.Server
-    Revolio.Type
     Revolio.Type.Action
     Revolio.Type.Command
     Revolio.Type.Config
