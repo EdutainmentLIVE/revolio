@@ -10,16 +10,17 @@ import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Encoding
 
 newtype SlackSigningSecret = SlackSigningSecret
-  { unwrapSlackSigningSecret :: Text.Text
+  { unwrapSlackSigningSecret :: Memory.ScrubbedBytes
   } deriving (Eq, Show)
 
 instance Memory.ByteArrayAccess SlackSigningSecret where
-  length = Memory.length . Encoding.encodeUtf8 . slackSigningSecretToText
-  withByteArray =
-    Memory.withByteArray . Encoding.encodeUtf8 . slackSigningSecretToText
+  length = Memory.length . unwrapSlackSigningSecret
+  withByteArray = Memory.withByteArray . unwrapSlackSigningSecret
 
 textToSlackSigningSecret :: Text.Text -> SlackSigningSecret
-textToSlackSigningSecret = SlackSigningSecret
+textToSlackSigningSecret =
+  SlackSigningSecret . Memory.convert . Encoding.encodeUtf8
 
 slackSigningSecretToText :: SlackSigningSecret -> Text.Text
-slackSigningSecretToText = unwrapSlackSigningSecret
+slackSigningSecretToText =
+  Encoding.decodeUtf8 . Memory.convert . unwrapSlackSigningSecret
