@@ -187,24 +187,6 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
           Revolio.directionToText Revolio.DirectionOut
             `Hspec.shouldBe` text "out"
 
-    Hspec.describe "StratusTimeClientId" $ do
-
-      Hspec.it "can be used as a query value" $ do
-        (Http.toQueryValue . Revolio.textToStratusTimeClientId $ text "123")
-          `Hspec.shouldBe` (Just $ utf8 "123")
-
-    Hspec.describe "StratusTimeLoginId" $ do
-
-      Hspec.it "can be used as a query value" $ do
-        (Http.toQueryValue . Revolio.textToStratusTimeLoginId $ text "you")
-          `Hspec.shouldBe` (Just $ utf8 "you")
-
-    Hspec.describe "StratusTimePassword" $ do
-
-      Hspec.it "can be used as a query value" $ do
-        (Http.toQueryValue . Revolio.textToStratusTimePassword $ text "axe")
-          `Hspec.shouldBe` (Just $ utf8 "axe")
-
     Hspec.describe "Payload" $ do
 
       Hspec.describe "queryToPayload" $ do
@@ -234,20 +216,42 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
         Hspec.it "rejects a payload without required information" $ do
           parse [] `Hspec.shouldSatisfy` Either.isLeft
 
-    Hspec.describe "SlackMessage" $ do
+    Hspec.describe "Slack" $ do
 
-      Hspec.it "can be converted into JSON" $ do
-        let
-          expected = LazyByteString.fromStrict
-            $ utf8 "{\"text\":\":wave:\",\"response_type\":\"ephemeral\"}"
-        (Aeson.encode . Revolio.textToSlackMessage $ text ":wave:")
-          `Hspec.shouldBe` expected
+      Hspec.describe "Message" $ do
 
-    Hspec.describe "SlackSigningSecret" $ do
+        Hspec.it "can be converted into JSON" $ do
+          let
+            expected = LazyByteString.fromStrict
+              $ utf8 "{\"text\":\":wave:\",\"response_type\":\"ephemeral\"}"
+          (Aeson.encode . Revolio.textToSlackMessage $ text ":wave:")
+            `Hspec.shouldBe` expected
 
-      Hspec.it "can be used as a byte array" $ do
-        (Memory.length . Revolio.textToSlackSigningSecret $ text "123")
-          `Hspec.shouldBe` 3
+      Hspec.describe "SigningSecret" $ do
+
+        Hspec.it "can be used as a byte array" $ do
+          (Memory.length . Revolio.textToSlackSigningSecret $ text "123")
+            `Hspec.shouldBe` 3
+
+    Hspec.describe "StratusTime" $ do
+
+      Hspec.describe "StratusTimeClientId" $ do
+
+        Hspec.it "can be used as a query value" $ do
+          (Http.toQueryValue . Revolio.textToStratusTimeClientId $ text "123")
+            `Hspec.shouldBe` (Just $ utf8 "123")
+
+      Hspec.describe "StratusTimeLoginId" $ do
+
+        Hspec.it "can be used as a query value" $ do
+          (Http.toQueryValue . Revolio.textToStratusTimeLoginId $ text "you")
+            `Hspec.shouldBe` (Just $ utf8 "you")
+
+      Hspec.describe "StratusTimePassword" $ do
+
+        Hspec.it "can be used as a query value" $ do
+          (Http.toQueryValue . Revolio.textToStratusTimePassword $ text "axe")
+            `Hspec.shouldBe` (Just $ utf8 "axe")
 
     Hspec.describe "Url" $ do
 
