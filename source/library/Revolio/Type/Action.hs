@@ -18,8 +18,8 @@ data Action
 
 textToAction :: Text.Text -> Either String Action
 textToAction text = case Text.unpack <$> Text.words text of
-  ["clock", "in"] -> Right $ ActionClock Type.DirectionIn
-  ["clock", "out"] -> Right $ ActionClock Type.DirectionOut
+  ["clock", direction] ->
+    ActionClock <$> Type.textToDirection (Text.pack direction)
   ["help"] -> Right ActionHelp
   ["setup", username, password] -> Right $ ActionSetup
     (Type.textToStratusTimeLoginId $ Text.pack username)
@@ -28,9 +28,8 @@ textToAction text = case Text.unpack <$> Text.words text of
 
 actionToText :: Action -> Text.Text
 actionToText action = case action of
-  ActionClock direction -> Text.pack $ "clock " <> case direction of
-    Type.DirectionIn -> "in"
-    Type.DirectionOut -> "out"
+  ActionClock direction ->
+    Text.pack "clock " <> Type.directionToText direction
   ActionHelp -> Text.pack "help"
   ActionSetup username password -> Text.unwords
     [ Text.pack "setup"
