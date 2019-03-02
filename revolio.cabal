@@ -52,6 +52,7 @@ library
   hs-source-dirs: source/library
   other-modules:
     Paths_revolio
+    Revolio.Console
     Revolio.Main
     Revolio.Server
     Revolio.Type.Action

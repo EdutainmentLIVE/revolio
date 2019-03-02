@@ -11,7 +11,7 @@ module Revolio
   , Revolio.Type.Command.commandToText
   , Revolio.Type.Config.Config(..)
   , Revolio.Type.Config.defaultConfig
-  , Revolio.Type.Config.getConfig
+  , Revolio.Console.getConfig
   , Revolio.Type.Direction.Direction(..)
   , Revolio.Type.Direction.textToDirection
   , Revolio.Type.Direction.directionToText
@@ -55,6 +55,7 @@ module Revolio
   )
 where
 
+import qualified Revolio.Console
 import qualified Revolio.Main
 import qualified Revolio.Server
 import qualified Revolio.Type.Action
