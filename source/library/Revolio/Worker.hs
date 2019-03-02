@@ -127,8 +127,12 @@ logIn config credentials = do
         , ( Http.toQueryKey "txtCustomerAlias"
           , Http.toQueryValue $ Type.configClient config
           )
-        , (Http.toQueryKey "txtLoginID", Http.toQueryValue $ Type.stratusTimeCredentialsLoginId credentials)
-        , (Http.toQueryKey "txtPassword", Http.toQueryValue $ Type.stratusTimeCredentialsPassword credentials)
+        , ( Http.toQueryKey "txtLoginID"
+          , Http.toQueryValue $ Type.stratusTimeCredentialsLoginId credentials
+          )
+        , ( Http.toQueryKey "txtPassword"
+          , Http.toQueryValue $ Type.stratusTimeCredentialsPassword credentials
+          )
         ]
       }
     manager

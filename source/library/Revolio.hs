@@ -30,13 +30,13 @@ module Revolio
   , Revolio.Type.Slack.UserId.SlackUserId
   , Revolio.Type.Slack.UserId.textToSlackUserId
   , Revolio.Type.Slack.UserId.slackUserIdToText
+  , Revolio.Type.StratusTime.BaseUrl.StratusTimeBaseUrl
+  , Revolio.Type.StratusTime.BaseUrl.textToStratusTimeBaseUrl
+  , Revolio.Type.StratusTime.BaseUrl.stratusTimeBaseUrlToText
   , Revolio.Type.StratusTime.ClientId.StratusTimeClientId
   , Revolio.Type.StratusTime.ClientId.textToStratusTimeClientId
   , Revolio.Type.StratusTime.ClientId.stratusTimeClientIdToText
   , Revolio.Type.StratusTime.Credentials.StratusTimeCredentials(..)
-  , Revolio.Type.StratusTime.BaseUrl.StratusTimeBaseUrl
-  , Revolio.Type.StratusTime.BaseUrl.textToStratusTimeBaseUrl
-  , Revolio.Type.StratusTime.BaseUrl.stratusTimeBaseUrlToText
   , Revolio.Type.StratusTime.LoginId.StratusTimeLoginId
   , Revolio.Type.StratusTime.LoginId.textToStratusTimeLoginId
   , Revolio.Type.StratusTime.LoginId.stratusTimeLoginIdToText

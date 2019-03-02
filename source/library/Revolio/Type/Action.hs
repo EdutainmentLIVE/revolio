@@ -22,10 +22,13 @@ textToAction text = case Text.unpack <$> Text.words text of
   ["clock", direction] ->
     ActionClock <$> Type.textToDirection (Text.pack direction)
   ["help"] -> Right ActionHelp
-  ["setup", username, password] -> Right $ ActionSetup Type.StratusTimeCredentials
-    { Type.stratusTimeCredentialsLoginId = Type.textToStratusTimeLoginId $ Text.pack username
-    , Type.stratusTimeCredentialsPassword = Type.textToStratusTimePassword $ Text.pack password
-    }
+  ["setup", username, password] -> Right $ ActionSetup
+    Type.StratusTimeCredentials
+      { Type.stratusTimeCredentialsLoginId = Type.textToStratusTimeLoginId
+        $ Text.pack username
+      , Type.stratusTimeCredentialsPassword = Type.textToStratusTimePassword
+        $ Text.pack password
+      }
   _ -> Left $ "unknown action: " <> show text
 
 actionToText :: Action -> Text.Text
@@ -35,6 +38,8 @@ actionToText action = case action of
   ActionHelp -> Text.pack "help"
   ActionSetup credentials -> Text.unwords
     [ Text.pack "setup"
-    , Type.stratusTimeLoginIdToText $ Type.stratusTimeCredentialsLoginId credentials
-    , Type.stratusTimePasswordToText $ Type.stratusTimeCredentialsPassword credentials
+    , Type.stratusTimeLoginIdToText
+      $ Type.stratusTimeCredentialsLoginId credentials
+    , Type.stratusTimePasswordToText
+      $ Type.stratusTimeCredentialsPassword credentials
     ]
