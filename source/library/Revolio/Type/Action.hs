@@ -29,7 +29,7 @@ textToAction text = case Text.unpack <$> Text.words text of
 actionToText :: Action -> Text.Text
 actionToText action = case action of
   ActionClock direction ->
-    Text.pack "clock " <> Type.directionToText direction
+    Text.unwords [Text.pack "clock", Type.directionToText direction]
   ActionHelp -> Text.pack "help"
   ActionSetup username password -> Text.unwords
     [ Text.pack "setup"
