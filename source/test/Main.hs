@@ -259,6 +259,21 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
           (Http.toQueryValue . Revolio.textToStratusTimePassword $ text "axe")
             `Hspec.shouldBe` (Just $ utf8 "axe")
 
+    Hspec.describe "Queue" $ do
+
+      Hspec.it "can store and retrieve payloads" $ do
+        url <- either fail pure . Revolio.textToUrl $ text "http://test"
+        let
+          payload = Revolio.Payload
+            { Revolio.payloadAction = Revolio.ActionHelp
+            , Revolio.payloadCommand = Revolio.CommandRevolio
+            , Revolio.payloadResponseUrl = url
+            , Revolio.payloadUserId = Revolio.textToSlackUserId $ text "U1"
+            }
+        queue <- Revolio.makeQueue
+        Revolio.enqueue queue payload
+        Revolio.dequeue queue `Hspec.shouldReturn` payload
+
     Hspec.describe "Url" $ do
 
       Hspec.describe "textToUrl" $ do
@@ -277,6 +292,21 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
           let expected = text "http://test"
           url <- either fail pure $ Revolio.textToUrl expected
           Revolio.urlToText url `Hspec.shouldBe` expected
+
+    Hspec.describe "Vault" $ do
+
+      Hspec.it "can store and retrieve credentials" $ do
+        let
+          userId = Revolio.textToSlackUserId $ text "U1"
+          loginId = Revolio.textToStratusTimeLoginId $ text "u"
+          password = Revolio.textToStratusTimePassword $ text "p"
+          credentials = Revolio.StratusTimeCredentials loginId password
+        vault <- Revolio.makeVault
+        do
+          result <- Revolio.lookupVault vault userId
+          result `Hspec.shouldSatisfy` Either.isLeft
+        Revolio.insertVault vault userId credentials
+        Revolio.lookupVault vault userId `Hspec.shouldReturn` Right credentials
 
   Hspec.describe "Version" $ do
 
