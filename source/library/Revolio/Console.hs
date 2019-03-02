@@ -58,7 +58,8 @@ portOption =
   makeOption ['p'] ["port"] "set the port"
     . requireArgument "PORT"
     $ \string config -> case Read.readEither string of
-        Left problem -> Left $ "invalid port: " <> problem
+        Left problem ->
+          Left $ "invalid port (" <> problem <> "): " <> show string
         Right port -> Right config { Type.configPort = port }
 
 secretOption :: Option
@@ -108,12 +109,12 @@ quote string = "`" <> string <> "'"
 buildConfig :: String -> [Update] -> [String] -> Either String Type.Config
 buildConfig program updates errors = if null errors
   then case foldr (either Left) (Right Type.defaultConfig) updates of
-    Left problem -> Left problem
+    Left problem -> Left $ "ERROR: " <> problem
     Right config
       | Type.configShowHelp config -> Left $ showHelp program
       | Type.configShowVersion config -> Left showVersion
       | otherwise -> Right config
-  else Left $ concat errors
+  else Left $ concatMap (mappend "ERROR: ") errors
 
 showHelp :: String -> String
 showHelp program = Console.usageInfo program options
