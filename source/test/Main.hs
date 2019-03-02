@@ -60,9 +60,10 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
 
         Hspec.it "parses a setup action" $ do
           let
-            action = Revolio.ActionSetup
-              (Revolio.textToStratusTimeLoginId $ text "username")
-              (Revolio.textToStratusTimePassword $ text "password")
+            action = Revolio.ActionSetup Revolio.StratusTimeCredentials
+              { Revolio.stratusTimeCredentialsLoginId = Revolio.textToStratusTimeLoginId $ text "username"
+              , Revolio.stratusTimeCredentialsPassword = Revolio.textToStratusTimePassword $ text "password"
+              }
           Revolio.textToAction (text "setup username password")
             `Hspec.shouldBe` Right action
 
@@ -87,9 +88,10 @@ main = Hspec.hspec . Hspec.describe "Revolio" $ do
             `Hspec.shouldBe` text "clock out"
           Revolio.actionToText Revolio.ActionHelp `Hspec.shouldBe` text "help"
           Revolio.actionToText
-              (Revolio.ActionSetup
-                (Revolio.textToStratusTimeLoginId $ text "u")
-                (Revolio.textToStratusTimePassword $ text "p")
+              (Revolio.ActionSetup Revolio.StratusTimeCredentials
+                { Revolio.stratusTimeCredentialsLoginId = Revolio.textToStratusTimeLoginId $ text "u"
+                , Revolio.stratusTimeCredentialsPassword = Revolio.textToStratusTimePassword $ text "p"
+                }
               )
             `Hspec.shouldBe` text "setup u p"
 

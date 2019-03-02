@@ -65,6 +65,7 @@ library
     Revolio.Type.Slack.UserId
     Revolio.Type.StratusTime.BaseUrl
     Revolio.Type.StratusTime.ClientId
+    Revolio.Type.StratusTime.Credentials
     Revolio.Type.StratusTime.LoginId
     Revolio.Type.StratusTime.Password
     Revolio.Type.Url

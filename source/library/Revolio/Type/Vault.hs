@@ -9,14 +9,13 @@ where
 import qualified Control.Concurrent.STM as Stm
 import qualified Data.Map as Map
 import qualified Revolio.Type.Slack.UserId as Type
-import qualified Revolio.Type.StratusTime.LoginId as Type
-import qualified Revolio.Type.StratusTime.Password as Type
+import qualified Revolio.Type.StratusTime.Credentials as Type
 
 type Vault
   = Stm.TVar
     ( Map.Map
         Type.SlackUserId
-        (Type.StratusTimeLoginId, Type.StratusTimePassword)
+        Type.StratusTimeCredentials
     )
 
 makeVault :: IO Vault
@@ -25,11 +24,10 @@ makeVault = Stm.newTVarIO Map.empty
 insertVault
   :: Vault
   -> Type.SlackUserId
-  -> Type.StratusTimeLoginId
-  -> Type.StratusTimePassword
+  -> Type.StratusTimeCredentials
   -> IO ()
-insertVault vault key username password =
-  Stm.atomically . Stm.modifyTVar vault $ Map.insert key (username, password)
+insertVault vault key value =
+  Stm.atomically . Stm.modifyTVar vault $ Map.insert key value
 
 lookupVault
   :: Vault
@@ -37,7 +35,7 @@ lookupVault
   -> IO
        ( Either
            String
-           (Type.StratusTimeLoginId, Type.StratusTimePassword)
+           Type.StratusTimeCredentials
        )
 lookupVault vault key = do
   map_ <- Stm.readTVarIO vault

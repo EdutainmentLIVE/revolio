@@ -23,6 +23,7 @@ import qualified Revolio.Type.Payload as Type
 import qualified Revolio.Type.Queue as Type
 import qualified Revolio.Type.Slack.Message as Type
 import qualified Revolio.Type.StratusTime.BaseUrl as Type
+import qualified Revolio.Type.StratusTime.Credentials as Type
 import qualified Revolio.Type.StratusTime.LoginId as Type
 import qualified Revolio.Type.StratusTime.Password as Type
 import qualified Revolio.Type.Url as Type
@@ -46,16 +47,16 @@ handlePayload :: Type.Config -> Type.Vault -> Type.Payload -> IO ()
 handlePayload config vault payload = case Type.payloadAction payload of
   Type.ActionHelp -> reply payload usageInfo
 
-  Type.ActionSetup username password -> do
-    Type.insertVault vault (Type.payloadUserId payload) username password
+  Type.ActionSetup credentials -> do
+    Type.insertVault vault (Type.payloadUserId payload) credentials
     reply payload "Successfully saved your credentials."
 
   Type.ActionClock direction -> do
     result <- Type.lookupVault vault $ Type.payloadUserId payload
     case result of
       Left _ -> reply payload "Failed to find your credentials."
-      Right (username, password) -> do
-        logInResponse <- logIn config username password
+      Right credentials -> do
+        logInResponse <- logIn config credentials
         case getCookie logInResponse of
           Left _ -> reply payload "Failed to log in."
           Right cookie -> case getToken cookie of
@@ -103,17 +104,16 @@ usageInfo =
     h = Type.actionToText Type.ActionHelp
     u = Type.textToStratusTimeLoginId $ Text.pack "USERNAME"
     p = Type.textToStratusTimePassword $ Text.pack "PASSWORD"
-    s = Type.actionToText $ Type.ActionSetup u p
+    s = Type.actionToText . Type.ActionSetup $ Type.StratusTimeCredentials u p
     i = Type.actionToText $ Type.ActionClock Type.DirectionIn
     o = Type.actionToText $ Type.ActionClock Type.DirectionOut
   in Printf.printf format c h c s c i c o
 
 logIn
   :: Type.Config
-  -> Type.StratusTimeLoginId
-  -> Type.StratusTimePassword
+  -> Type.StratusTimeCredentials
   -> IO (Client.Response LazyByteString.ByteString)
-logIn config username password = do
+logIn config credentials = do
   manager <- Tls.getGlobalManager
   request <- makeRequest (Type.configUrl config) ""
   Client.httpLbs
@@ -127,8 +127,8 @@ logIn config username password = do
         , ( Http.toQueryKey "txtCustomerAlias"
           , Http.toQueryValue $ Type.configClient config
           )
-        , (Http.toQueryKey "txtLoginID", Http.toQueryValue username)
-        , (Http.toQueryKey "txtPassword", Http.toQueryValue password)
+        , (Http.toQueryKey "txtLoginID", Http.toQueryValue $ Type.stratusTimeCredentialsLoginId credentials)
+        , (Http.toQueryKey "txtPassword", Http.toQueryValue $ Type.stratusTimeCredentialsPassword credentials)
         ]
       }
     manager

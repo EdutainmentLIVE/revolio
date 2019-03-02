@@ -33,6 +33,7 @@ module Revolio
   , Revolio.Type.StratusTime.ClientId.StratusTimeClientId
   , Revolio.Type.StratusTime.ClientId.textToStratusTimeClientId
   , Revolio.Type.StratusTime.ClientId.stratusTimeClientIdToText
+  , Revolio.Type.StratusTime.Credentials.StratusTimeCredentials(..)
   , Revolio.Type.StratusTime.BaseUrl.StratusTimeBaseUrl
   , Revolio.Type.StratusTime.BaseUrl.textToStratusTimeBaseUrl
   , Revolio.Type.StratusTime.BaseUrl.stratusTimeBaseUrlToText
@@ -67,6 +68,7 @@ import qualified Revolio.Type.Slack.SigningSecret
 import qualified Revolio.Type.Slack.UserId
 import qualified Revolio.Type.StratusTime.BaseUrl
 import qualified Revolio.Type.StratusTime.ClientId
+import qualified Revolio.Type.StratusTime.Credentials
 import qualified Revolio.Type.StratusTime.LoginId
 import qualified Revolio.Type.StratusTime.Password
 import qualified Revolio.Type.Url
