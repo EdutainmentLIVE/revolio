@@ -1,8 +1,9 @@
-FROM haskell:8.6.3 AS build
+FROM itprotv/stack:tag-2.1.1 AS build
 
   WORKDIR /root/revolio
 
   COPY stack.yaml .
+  RUN touch revolio.cabal
   RUN stack setup
   RUN stack update
 
@@ -13,17 +14,16 @@ FROM haskell:8.6.3 AS build
   COPY . .
   RUN stack build \
     --copy-bins \
-    --local-bin-path /usr/local/bin \
     --no-run-tests \
     --pedantic \
     --test
   RUN stack build --test
 
-FROM debian:9.7-slim
+FROM debian:stretch-20190610-slim
 
   RUN apt-get update && apt-get install --assume-yes \
     ca-certificates libgmp-dev netbase
-  COPY --from=build /usr/local/bin/revolio /usr/local/bin/revolio
+  COPY --from=build /root/.local/bin/revolio /usr/local/bin/revolio
   EXPOSE 80
   CMD revolio \
     --client "$STRATUS_TIME_CLIENT_ID" \

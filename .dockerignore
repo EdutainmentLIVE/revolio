@@ -1,5 +1,7 @@
-/.dockerignore
-/.git/
-/.gitignore
-/.stack-work/
-/Dockerfile
+*
+
+!/LICENSE.markdown
+!/README.markdown
+!/revolio.cabal
+!/source/
+!/stack.yaml
