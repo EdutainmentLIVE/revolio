@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Configuration values for the services often contain secrets,
+# so we keep those files outside git. These are fully formed
+# terraform modules that are pulled in by the appropriate
+# parts of the terraform setup. For the most part they are
+# simple collections of output values that need to get
+# propagated to other places (e.g. ECS environment variables).
+#
+
+ACTION=$1
+
+SUBTREE=revolio
+LOCAL_PATH=itprotv-service-config/$SUBTREE
+REMOTE_PATH=s3://itprotv-service-config/$SUBTREE
+SYNC="aws s3 sync --delete"
+
+case $ACTION in
+  pull)
+    $SYNC $REMOTE_PATH $LOCAL_PATH
+    ;;
+
+  push)
+    $SYNC $LOCAL_PATH $REMOTE_PATH
+    ;;
+
+  diff)
+    echo "Dry run of ./service_config pull"
+    $SYNC --dryrun $REMOTE_PATH $LOCAL_PATH
+    echo ""
+
+    echo "Dry run of ./service_config push"
+    $SYNC --dryrun $LOCAL_PATH $REMOTE_PATH
+    echo ""
+    ;;
+
+  *)
+    echo "Unknown action: $ACTION"
+    exit 1
+esac;
+

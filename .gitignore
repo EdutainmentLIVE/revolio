@@ -1,1 +1,12 @@
 /.stack-work/
+
+# Terraform configuration with secrets
+terraform/settings.env
+
+# Terraform's work dir
+terraform/.terraform
+
+# Terraform plans that devs might have forgotten to remove
+*.tfplan
+
+itprotv-service-config
