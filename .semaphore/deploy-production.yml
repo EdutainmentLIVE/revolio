@@ -1,0 +1,27 @@
+version: v1.0
+name: Deploy production
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+
+blocks:
+  - name: Deploy
+    task:
+      secrets:
+        - name: aws-credentials
+      env_vars:
+        - { name: ENVIRONMENT, value: production }
+      jobs:
+        - name: Job
+          commands_file: deploy.sh
+  - name: Wait
+    task:
+      secrets:
+        - name: aws-credentials
+      env_vars:
+        - { name: CLUSTER, value: production }
+        - { name: SERVICES, value: prod-revolio }
+      jobs:
+        - name: Job
+          commands_file: wait.sh

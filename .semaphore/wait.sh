@@ -1,0 +1,1 @@
+aws ecs wait services-stable --cluster $CLUSTER --services $SERVICES

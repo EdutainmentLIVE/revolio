@@ -1,0 +1,8 @@
+version: "2"
+services:
+  terraform:
+    image: hashicorp/terraform:0.12.2
+    volumes:
+      - .:/work
+    working_dir: /work
+    env_file: settings.env

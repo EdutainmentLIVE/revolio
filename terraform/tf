@@ -1,0 +1,30 @@
+#!/bin/sh
+if [ ! -f .terraform/terraform.tfstate ]; then
+  echo "No .terraform/terraform.tfstate file exists. It looks like you are running without having setup remote state."
+  echo "This is very dangerous, so I'm going to bail out."
+  echo
+  echo "Try ./init"
+  exit 1
+fi
+
+set -e
+
+if [ "$1" = "--latest-shas" ]; then
+  shift
+  PROD_SHA=$(git show-ref --verify -s refs/remotes/origin/master)
+  echo ""
+  echo "*********************************************************"
+  echo "* You asked for the latest shas to be used. Based on    *"
+  echo "* your git repo, it looks like these are:               *"
+  echo "*                                                       *"
+  echo "* Prod SHA:    $PROD_SHA *"
+  echo "*********************************************************"
+  echo ""
+fi;
+
+prod="{git_sha=\"$PROD_SHA\"}"
+
+docker-compose \
+  run --rm \
+  -e TF_VAR_production="$prod" \
+  terraform "$@"
