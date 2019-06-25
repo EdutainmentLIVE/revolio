@@ -8,6 +8,8 @@ agent:
 blocks:
   - name: Build
     task:
+      secrets:
+        - name: aws-credentials
       jobs:
         - name: Job
           commands_file: build.sh
