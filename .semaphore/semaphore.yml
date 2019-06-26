@@ -17,3 +17,5 @@ blocks:
 promotions:
   - name: Deploy production
     pipeline_file: deploy-production.yml
+  - name: Deploy lifecycle
+    pipeline_file: deploy-lifecycle.yml
