@@ -51,6 +51,19 @@ EOF
 
 }
 
+resource "aws_security_group" "security_group" {
+  name        = "${var.environment}-${var.app}"
+  description = "Allow all https inbound traffic"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_ecs_service" "service_fargate" {
   name = "${var.environment}-${var.app}"
   task_definition = aws_ecs_task_definition.task_def_fargate.arn
@@ -61,7 +74,7 @@ resource "aws_ecs_service" "service_fargate" {
 
   network_configuration {
     subnets = var.subnet_ids
-    security_groups = var.security_groups
+    security_groups = [ "${aws_security_group.security_group.id}" ]
     assign_public_ip = "true"
   }
 

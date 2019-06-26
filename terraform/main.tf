@@ -39,7 +39,6 @@ module "production" {
   vpc_id = data.terraform_remote_state.genesis.outputs.vpc_id
   cluster_name = data.terraform_remote_state.genesis.outputs.production_cluster_name
   subnet_ids = data.terraform_remote_state.genesis.outputs.vpc_subnet_ids
-  security_groups = data.terraform_remote_state.genesis.outputs.vpc_security_groups
   desired_count = 1
 
   repo = aws_ecr_repository.repo.repository_url

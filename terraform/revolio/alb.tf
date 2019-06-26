@@ -2,7 +2,7 @@ resource "aws_alb" "alb" {
   name = "${var.environment}-${var.app}"
   internal = true
 
-  security_groups = var.security_groups
+  security_groups = [ "${aws_security_group.security_group.id}" ]
   subnets         = var.subnet_ids
 
   enable_deletion_protection = true
