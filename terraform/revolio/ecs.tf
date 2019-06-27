@@ -48,20 +48,6 @@ resource "aws_ecs_task_definition" "task_def_fargate" {
 }
 ]
 EOF
-
-}
-
-resource "aws_security_group" "security_group" {
-  name        = "${var.environment}-${var.app}"
-  description = "Allow all https inbound traffic"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 }
 
 resource "aws_ecs_service" "service_fargate" {
@@ -108,3 +94,43 @@ resource "aws_iam_role_policy_attachment" "ecsTaskExecutionRole_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+resource "aws_security_group" "security_group" {
+  name        = "ecs-${var.environment}-${var.app}"
+  description = "Allow all outbound traffic"
+  vpc_id      = var.vpc_id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_alb_target_group" "target_group_fargate" {
+  name        = "${var.environment}-${var.app}-fargate"
+  port        = 80
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = var.vpc_id
+  deregistration_delay = 10
+
+  health_check {
+    path = "/ping"
+  }
+}
+
+resource "aws_alb_listener_rule" "listener_rule" {
+  listener_arn = var.public_alb_arn
+  priority     = 500
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_alb_target_group.target_group_fargate.arn
+  }
+
+  condition {
+    field  = "host-header"
+    values = [var.listener_host]
+  }
+}

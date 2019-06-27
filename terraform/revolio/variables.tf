@@ -22,6 +22,10 @@ variable "subnet_ids" {
   type = list(string)
 }
 
+variable "security_groups" {
+  type = list(string)
+}
+
 variable "app" {
   type = string
 }
@@ -36,4 +40,12 @@ variable "cloudwatch_log_group" {
 
 variable "desired_count" {
   type = number
+}
+
+variable "public_alb_arn" {
+  type = string
+}
+
+variable "listener_host" {
+  type = string
 }
