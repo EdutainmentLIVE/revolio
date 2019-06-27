@@ -18,11 +18,11 @@ variable "region" {
   type = string
 }
 
-variable "security_groups" {
+variable "subnet_ids" {
   type = list(string)
 }
 
-variable "subnet_ids" {
+variable "security_groups" {
   type = list(string)
 }
 
@@ -40,4 +40,12 @@ variable "cloudwatch_log_group" {
 
 variable "desired_count" {
   type = number
+}
+
+variable "public_alb_arn" {
+  type = string
+}
+
+variable "listener_host" {
+  type = string
 }
