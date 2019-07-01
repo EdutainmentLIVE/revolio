@@ -35,7 +35,7 @@ module "production" {
   app = "revolio"
 
   cloudwatch_log_group = "prod-revolio"
-  listener_host = "aws.revolio.us"
+  listener_host = "revolio.internal.itpro.tv"
   public_alb_arn = data.terraform_remote_state.genesis.outputs.production_public_alb_arn
 
   vpc_id = data.terraform_remote_state.genesis.outputs.vpc_id
