@@ -15,7 +15,7 @@ blocks:
           commands_file: build.sh
 
 promotions:
-  - name: Deploy production
-    pipeline_file: deploy-production.yml
   - name: Deploy lifecycle
     pipeline_file: deploy-lifecycle.yml
+  - name: Deploy production
+    pipeline_file: deploy-production.yml
